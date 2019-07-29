@@ -49,26 +49,26 @@ func (s *SmartContract) tapProcess(stub shim.ChaincodeStubInterface, args []stri
 
 	var tapRt jsonStruct.TapRecord
 
-	tapRt.Header.VPMN                       = "KORKF"
-	tapRt.Header.HPMN                       = "CHNCT"
-	tapRt.Header.FileType                   = "TransferBatch"
-	tapRt.Header.CdTdlndicator              = "TD"
-	tapRt.Header.FileSequenceNumber         = "0001"
-	tapRt.Header.FileCreationTimeStamp      = "201907221018"
-	tapRt.Header.FileCreateUtcTimeOffset    = ""
-	tapRt.Header.Recordcount = "1"
+	tapRt.Header.VPMN                        = "KORKF"
+	tapRt.Header.HPMN                        = "CHNCT"
+	tapRt.Header.FileType                    = "TransferBatch"
+	tapRt.Header.CdTdlndicator               = "TD"
+	tapRt.Header.FileSequenceNumber          = "0001"
+	tapRt.Header.FileCreationTimeStamp       = "201907221018"
+	tapRt.Header.FileCreateUtcTimeOffset     = ""
+	tapRt.Header.Recordcount                 = "1"
 	tapRt.CdrInfos.ID	                     = "0412"
 	tapRt.CdrInfos.CallType	                 = "MOC"
 	tapRt.CdrInfos.Imsi	                     = "0821088106346"
 	tapRt.CdrInfos.CalledNumber	             = "062222222"
 	tapRt.CdrInfos.LocalTimeStamp	         = "20190725135959"
-	tapRt.CdrInfos.UtcTimeOffset	             = ""
+	tapRt.CdrInfos.UtcTimeOffset	         = ""
 	tapRt.CdrInfos.TotalCallEventDuration	 = "485"
 	tapRt.CdrInfos.Imei	                     = ""
-	tapRt.CdrInfos.CallingNumber	             = "01011111111"
+	tapRt.CdrInfos.CallingNumber	         = "01011111111"
 	tapRt.CdrInfos.DataBolumeIncoming	     = ""
 	tapRt.CdrInfos.DataVolumeOutgoing	     = ""
-	tapRt.CdrInfos.Charge                     = 0
+	tapRt.CdrInfos.Charge                    = 0
 	tapRt.CdrInfos.SetCharge                 = 0
 
 
@@ -78,8 +78,8 @@ func (s *SmartContract) tapProcess(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Calc Err")
 	}
 
-	service.Log_add(tapRt)
-	return shim.Success()
+	service.Log_add(tapRt.Header.VPMN)
+	return shim.Success(getSuccessReturnValue("success"))
 }
 
 //Tap insert
