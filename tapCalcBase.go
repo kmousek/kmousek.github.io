@@ -30,7 +30,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	Log_add(tapRd.CdrInfos.CallType)
 
 	subAgt := jsonStruct.Agreement{}  //계약 서브 구조체 (past와 current중 하나 Agreement매핑)
-	nowDate := tapRd.CdrInfos.LOCAL_TIME[:8]
+	nowDate := tapRd.CdrInfos.LocalTimeStamp[:8]
 	Log_add(nowDate)
 
 	//1. active인 요율 계산용 agreement 조회
@@ -46,7 +46,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	// 정율 계산
 	for i:=0; i< len(subAgt.Basic); i++ {
 		if tapRd.CdrInfos.CallType == subAgt.Basic[i].TypeCD && (tapRd.CdrInfos.CallType == gCT_MOC_LOCAL || tapRd.CdrInfos.CallType == gCT_MOC_HOME || tapRd.CdrInfos.CallType == gCT_MOC_INTL || tapRd.CdrInfos.CallType == gCT_MTC) {
-			tapRd.CdrInfos.Charge = calcVoiceItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRd.CdrInfos.TOT_CALL_DURAT)
+			tapRd.CdrInfos.Charge = calcVoiceItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRd.CdrInfos.TotalCallEventDuration)
 			tapRd.CdrInfos.SetCharge = tapRd.CdrInfos.Charge
 			break
 		}else if tapRd.CdrInfos.CallType == subAgt.Basic[i].TypeCD && (tapRd.CdrInfos.CallType == gCT_SMS_MO || tapRd.CdrInfos.CallType == gCT_SMS_MT ) {
@@ -54,7 +54,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			tapRd.CdrInfos.SetCharge = tapRd.CdrInfos.Charge
 			break
 		}else if tapRd.CdrInfos.CallType == subAgt.Basic[i].TypeCD && tapRd.CdrInfos.CallType == gCT_DATA {
-			tapRd.CdrInfos.Charge = calcDataItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRd.CdrInfos.TOT_CALL_DURAT)
+			tapRd.CdrInfos.Charge = calcDataItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRd.CdrInfos.TotalCallEventDuration)
 			tapRd.CdrInfos.SetCharge = tapRd.CdrInfos.Charge
 			break
 		}
@@ -64,7 +64,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	fmt.Println(bCommitmentFlag)
 
 
-	fmt.Println(f64ImsiCapCharge)
+//	fmt.Println(f64ImsiCapCharge)
 
 
 	return nil
@@ -74,13 +74,13 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 //tap이 past인지 current인지 확인
 func searchAgtIdx(actAgt *jsonStruct.AgreementForCal, nowDate string) (jsonStruct.Agreement, bool, bool) {
 	returnAgt := jsonStruct.Agreement{}
-	var bImsiCapFlag boolean
-	var bCommitmentFlag boolean
+	var bImsiCapFlag bool
+	var bCommitmentFlag bool
 
 	if actAgt.AgreementInfo.Past.Period[0] <= nowDate && actAgt.AgreementInfo.Past.Period[1] >= nowDate{
-		returnAgt = agt.AgreementInfo.Past
+		returnAgt = actAgt.AgreementInfo.Past
 	}else if actAgt.AgreementInfo.Current.Period[0] <= nowDate && actAgt.AgreementInfo.Current.Period[1] >= nowDate {
-		returnAgt = agt.AgreementInfo.Current
+		returnAgt = actAgt.AgreementInfo.Current
 	}
 
 	if returnAgt.ImsiCap.THRSMIN == gNotExgtValue {
