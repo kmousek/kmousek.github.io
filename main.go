@@ -47,7 +47,7 @@ func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 //tap calc test
 func (s *SmartContract) tapProcess(stub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	tapRt := new(jsonStruct.TapRecord)
+	var tapRt jsonStruct.TapRecord
 
 	tapRt.Header.VPMN                       = "KORKF"
 	tapRt.Header.HPMN                       = "CHNCT"
@@ -69,16 +69,16 @@ func (s *SmartContract) tapProcess(stub shim.ChaincodeStubInterface, args []stri
 	tapRt.CdrInfos.DataBolumeIncoming	     = ""
 	tapRt.CdrInfos.DataVolumeOutgoing	     = ""
 	tapRt.CdrInfos.Charge                     = 0
-	tapRt.CdrInfos.SettCharge                 = 0
+	tapRt.CdrInfos.SetCharge                 = 0
 
 
 
-	err := CalculChargeAmount(stub, &tapRt)
+	err := service.CalculChargeAmount(stub, &tapRt)
 	if err != nil{
 		return shim.Error("Calc Err")
 	}
 
-	Log_add(tapRt)
+	service.Log_add(tapRt)
 	return shim.Success()
 }
 
