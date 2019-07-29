@@ -25,16 +25,16 @@ var gCT_SMS_MT = "SMS-mt"
 var gCT_DATA = "GRPC"
 
 //tap 요율 계산 처리 main
-func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRt *jsonStruct.TapResult) error {
+func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapRecord ) error {
 	Log_add("calcChargeAmount")
-	Log_add(tapRt.CallType)
+	Log_add(tapRd.CdrInfosGW.CallType)
 
 	subAgt := jsonStruct.Agreement{}  //계약 서브 구조체 (past와 current중 하나 Agreement매핑)
-	nowDate := tapRt.LocalTimeStamp[:8]
+	nowDate := tapRd.CdrInfosGW.LOCAL_TIME[:8]
 	Log_add(nowDate)
 
 	//1. active인 요율 계산용 agreement 조회
-	actAgt, err := Agreement_getActive(stub, nowDate, tapRt.VPMN, tapRt.HPMN)
+	actAgt, err := Agreement_getActive(stub, nowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
 	if err != nil{
 		//return shim.Error("Agreement_getActive error")
 	}
@@ -45,17 +45,17 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRt *jsonStruct.TapR
 
 	// 정율 계산
 	for i:=0; i< len(subAgt.Basic); i++ {
-		if tapRt.CallType == subAgt.Basic[i].TypeCD && (tapRt.CallType == gCT_MOC_LOCAL || tapRt.CallType == gCT_MOC_HOME || tapRt.CallType == gCT_MOC_INTL || tapRt.CallType == gCT_MTC) {
-			tapRt.Charge = calcVoiceItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRt.TotalCallEventDuration)
-			tapRt.SetCharge = tapRt.Charge
+		if tapRd.CdrInfosGW.CallType == subAgt.Basic[i].TypeCD && (tapRd.CdrInfosGW.CallType == gCT_MOC_LOCAL || tapRd.CdrInfosGW.CallType == gCT_MOC_HOME || tapRd.CdrInfosGW.CallType == gCT_MOC_INTL || tapRd.CdrInfosGW.CallType == gCT_MTC) {
+			tapRd.CdrInfosGW.Charge = calcVoiceItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRd.CdrInfosGW.TOT_CALL_DURAT)
+			tapRd.CdrInfosGW.SetCharge = tapRd.CdrInfosGW.Charge
 			break
-		}else if tapRt.CallType == subAgt.Basic[i].TypeCD && (tapRt.CallType == gCT_SMS_MO || tapRt.CallType == gCT_SMS_MT ) {
-			tapRt.Charge = calcSmsItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate)
-			tapRt.SetCharge = tapRt.Charge
+		}else if tapRd.CdrInfosGW.CallType == subAgt.Basic[i].TypeCD && (tapRd.CdrInfosGW.CallType == gCT_SMS_MO || tapRd.CdrInfosGW.CallType == gCT_SMS_MT ) {
+			tapRd.CdrInfosGW.Charge = calcSmsItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate)
+			tapRd.CdrInfosGW.SetCharge = tapRd.CdrInfosGW.Charge
 			break
-		}else if tapRt.CallType == subAgt.Basic[i].TypeCD && tapRt.CallType == gCT_DATA {
-			tapRt.Charge = calcDataItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRt.TotalCallEventDuration)
-			tapRt.SetCharge = tapRt.Charge
+		}else if tapRd.CdrInfosGW.CallType == subAgt.Basic[i].TypeCD && tapRd.CdrInfosGW.CallType == gCT_DATA {
+			tapRd.CdrInfosGW.Charge = calcDataItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRd.CdrInfosGW.TOT_CALL_DURAT)
+			tapRd.CdrInfosGW.SetCharge = tapRd.CdrInfosGW.Charge
 			break
 		}
 	}
