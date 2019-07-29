@@ -26,7 +26,7 @@ var gCT_DATA = "GRPC"
 //tap 요율 계산 처리 main
 func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRt *jsonStruct.TapResult) error {
 	Log_add("calcChargeAmount")
-	Log_add(tapRt.TypeCD)
+	Log_add(tapRt.CallType)
 	
 	subAgt := jsonStruct.Agreement{}  //계약 서브 구조체 (past와 current중 하나 Agreement매핑)
 	nowDate := tapRt.LocalTimeStamp[:8]
@@ -44,15 +44,15 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRt *jsonStruct.TapR
 	
 	// 정율 계산 
 	for i:=0; i< len(subAgt.Basic); i++ {
-		if tapRt.TypeCD == subAgt.Basic[i].TypeCD && (tapRt.TypeCD == gCT_MOC_LOCAL || tapRt.TypeCD == gCT_MOC_HOME || tapRt.TypeCD == gCT_MOC_INTL || tapRt.TypeCD == gCT_MTC) {
+		if tapRt.CallType == subAgt.Basic[i].TypeCD && (tapRt.CallType == gCT_MOC_LOCAL || tapRt.CallType == gCT_MOC_HOME || tapRt.CallType == gCT_MOC_INTL || tapRt.CallType == gCT_MTC) {
 			tapRt.Charge = calcVoiceItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRt.TotalCallEventDuration)
 			tapRt.SetCharge = tapRt.Charge
 			break
-		}else if tapRt.TypeCD == subAgt.Basic[i].TypeCD && (tapRt.TypeCD == gCT_SMS_MO || tapRt.TypeCD == gCT_SMS_MT ) {
+		}else if tapRt.CallType == subAgt.Basic[i].TypeCD && (tapRt.CallType == gCT_SMS_MO || tapRt.CallType == gCT_SMS_MT ) {
 			tapRt.Charge = calcSmsItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate)
 			tapRt.SetCharge = tapRt.Charge
 			break
-		}else if tapRt.TypeCD == subAgt.Basic[i].TypeCD && tapRt.TypeCD == gCT_DATA {
+		}else if tapRt.CallType == subAgt.Basic[i].TypeCD && tapRt.CallType == gCT_DATA {
 			tapRt.Charge = calcDataItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRt.TotalCallEventDuration)
 			tapRt.SetCharge = tapRt.Charge
 			break
@@ -110,19 +110,19 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRt *jsonStruct.TapR
 			return 0
 		}
 		
-		if tapRt.TypeCD == gCT_MOC_LOCAL{
+		if tapRt.CallType == gCT_MOC_LOCAL{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCLocal.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.TypeCD == gCT_MOC_HOME{
+		}else if tapRt.CallType == gCT_MOC_HOME{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCHome.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.TypeCD == gCT_MOC_INTL{
+		}else if tapRt.CallType == gCT_MOC_INTL{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCInt.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.TypeCD == gCT_MTC{
+		}else if tapRt.CallType == gCT_MTC{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCInt.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.TypeCD == gCT_SMS_MO{
+		}else if tapRt.CallType == gCT_SMS_MO{
 			f64ImsiCapCharge=stImsiUsage.TapCal.SMSMO.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.TypeCD == gCT_SMS_MT{
+		}else if tapRt.CallType == gCT_SMS_MT{
 			f64ImsiCapCharge=stImsiUsage.TapCal.SMSMT.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.TypeCD == gCT_DATA{
+		}else if tapRt.CallType == gCT_DATA{
 			f64ImsiCapCharge=stImsiUsage.TapCal.GPRS.CalculDetail.Charge + tapRt.Charge
 		}
 	}
