@@ -24,12 +24,20 @@ var gCT_SMS_MT = "SMS-mt"
 var gCT_DATA = "GRPC"
 
 //tap 요율 계산 처리 main
-func CalculChargeAmount(stub shim.ChaincodeStubInterface, actAgt jsonStruct.AgreementForCal, tapRt *jsonStruct.TapResult) error {
+func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRt *jsonStruct.TapResult) error {
 	Log_add("calcChargeAmount")
 	Log_add(tapRt.TypeCD)
 	
 	subAgt := jsonStruct.Agreement{}  //계약 서브 구조체 (past와 current중 하나 Agreement매핑)
 	nowDate := tapRt.LocalTimeStamp[:8]
+	Lod_add(nowDate)
+
+	//1. active인 요율 계산용 agreement 조회
+	actAgt, err := Agreement_getActive(stub, nowDate, tapRt.VPMN, tapRt.HPMN)
+	if err != nil{
+		//return shim.Error("Agreement_getActive error")
+	}
+
 
 	// 처리할 tap이 agreement의 past인지 current인지 확인, imsi cap/commitment적용대상인지 확인
 	subAgt, bImsiCapFlag, bCommitmentFlag := searchAgtIdx(&actAgt, nowDate)
