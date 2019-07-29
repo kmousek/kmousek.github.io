@@ -40,7 +40,13 @@ func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 	return shim.Error("Invalid Smart Contract function name.")
 }
 
-func getTapRecord() jsonStruct.TapRecord{
+
+
+
+
+//tap calc test
+func (s *SmartContract) tapProcess(stub shim.ChaincodeStubInterface, args []string) sc.Response {
+
 	tapRt := new(jsonStruct.TapRecord)
 
 	tapRt.Header.VPMN                       = "KORKF"
@@ -57,7 +63,7 @@ func getTapRecord() jsonStruct.TapRecord{
 	tapRt.CdrInfos.CalledNumber	             = "062222222"
 	tapRt.CdrInfos.LocalTimeStamp	         = "20190725135959"
 	tapRt.CdrInfos.UtcTimeOffset	             = ""
-	tapRt.CdrInfos.TotalCallEventDuration	 = 485
+	tapRt.CdrInfos.TotalCallEventDuration	 = "485"
 	tapRt.CdrInfos.Imei	                     = ""
 	tapRt.CdrInfos.CallingNumber	             = "01011111111"
 	tapRt.CdrInfos.DataBolumeIncoming	     = ""
@@ -65,21 +71,15 @@ func getTapRecord() jsonStruct.TapRecord{
 	tapRt.CdrInfos.Charge                     = 0
 	tapRt.CdrInfos.SettCharge                 = 0
 
-	return tapRt
-}
 
-//tap calc test
-func (s *SmartContract) tapProcess(stub shim.ChaincodeStubInterface, args []string) sc.Response {
-	tapRt := new(jsonStruct.TapRecord)
-	tapRt = getTapRecord()
 
 	err := CalculChargeAmount(stub, &tapRt)
 	if err != nil{
 		return shim.Error("Calc Err")
 	}
 
-	log_add(tapRt)
-	return shim.Success(returnValue)
+	Log_add(tapRt)
+	return shim.Success()
 }
 
 //Tap insert
