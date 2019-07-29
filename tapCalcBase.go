@@ -99,7 +99,7 @@ func searchAgtIdx(actAgt *jsonStruct.AgreementForCal, nowDate string) (jsonStruc
 }
 
 //음성 계산 함수
-func calcVoiceItem (unit string, rate string, volume string, totCallDurat float64) float64 {
+func calcVoiceItem (unit string, rate string, volume string, totCallDurat string) float64 {
 	Log_add("calcVoiceItem")
 
 	f64Rate, err := strconv.ParseFloat(rate, 64)
@@ -112,10 +112,15 @@ func calcVoiceItem (unit string, rate string, volume string, totCallDurat float6
 		return 0 //에러처리
 	}
 
+	f64TotCallDurat, err := strconv.ParseFloat(totCallDurat, 64)
+	if err != nil{
+		return 0 //에러처리
+	}
+
 	if unit =="min"{
-		return math.Ceil(totCallDurat/f64Volume * gVoiceUnit) * f64Rate
+		return math.Ceil(f64TotCallDurat/f64Volume * gVoiceUnit) * f64Rate
 	}else if unit =="sec"{
-		return math.Ceil(totCallDurat/ f64Volume) * f64Rate
+		return math.Ceil(f64TotCallDurat/ f64Volume) * f64Rate
 	}else{
 		return 0
 	}
@@ -133,7 +138,7 @@ func calcSmsItem (unit string, rate string) float64 {
 }
 
 //DATA 계산 함수
-func calcDataItem (unit string, rate string, volume string, totCallDurat float64) float64 {
+func calcDataItem (unit string, rate string, volume string, totCallDurat string) float64 {
 	Log_add("calcDataItem")
 
 	f64Rate, err := strconv.ParseFloat(rate, 64)
@@ -146,12 +151,17 @@ func calcDataItem (unit string, rate string, volume string, totCallDurat float64
 		return 0 //에러처리
 	}
 
+	f64TotCallDurat, err := strconv.ParseFloat(totCallDurat, 64)
+	if err != nil{
+		return 0 //에러처리
+	}
+
 	if unit =="mbytes"{
-		return math.Ceil(totCallDurat/ (f64Volume * gDataUnit)) * f64Rate
+		return math.Ceil(f64TotCallDurat/ (f64Volume * gDataUnit)) * f64Rate
 	}else if unit =="kbytes"{
-		return math.Ceil(totCallDurat/ f64Volume) * f64Rate
+		return math.Ceil(f64TotCallDurat/ f64Volume) * f64Rate
 	}else if unit =="bytes"{
-		return math.Ceil(totCallDurat/ (f64Volume / gDataUnit)) * f64Rate
+		return math.Ceil(f64TotCallDurat/ (f64Volume / gDataUnit)) * f64Rate
 	}else{
 		return 0
 	}
