@@ -1,14 +1,12 @@
 package service
 
 import (
-	"github.com/main/go/service"
+	"github.com/main/go/jsonStruct"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	sc "github.com/hyperledger/fabric/protos/peer"
-  "math"
-  "strconv"
-  "strings"
+    "math"
+    "strings"
 )
 
 //전역변수
@@ -26,9 +24,9 @@ var gCT_SMS_MT = "SMS-mt"
 var gCT_DATA = "GRPC"
 
 //tap 요율 계산 처리 main
-func CalcChargeAmount(stub shim.ChaincodeStubInterface, actAgt jsonStruct.AgreementForCal, tapRt *TapResult) error {
+func CalculChargeAmount(stub shim.ChaincodeStubInterface, actAgt jsonStruct.AgreementForCal, tapRt *jsonStruct.TapResult) error {
 	Log_add("calcChargeAmount")
-	Log_add(tapRt.CallType)
+	Log_add(tapRt.TypeCD)
 	
 	subAgt := jsonStruct.Agreement{}  //계약 서브 구조체 (past와 current중 하나 Agreement매핑)
 	nowDate := tapRt.LocalTimeStamp[:8]
@@ -38,15 +36,15 @@ func CalcChargeAmount(stub shim.ChaincodeStubInterface, actAgt jsonStruct.Agreem
 	
 	// 정율 계산 
 	for i:=0; i< len(subAgt.Basic); i++ {
-		if tapRt.CallType == subAgt.Basic[i].CallType && (tapRt.CallType == gCT_MOC_LOCAL || tapRt.CallType == gCT_MOC_HOME || tapRt.CallType == gCT_MOC_INTL || tapRt.CallType == gCT_MTC) {
+		if tapRt.TypeCD == subAgt.Basic[i].TypeCD && (tapRt.TypeCD == gCT_MOC_LOCAL || tapRt.TypeCD == gCT_MOC_HOME || tapRt.TypeCD == gCT_MOC_INTL || tapRt.TypeCD == gCT_MTC) {
 			tapRt.Charge = calcVoiceItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRt.TotalCallEventDuration)
 			tapRt.SetCharge = tapRt.Charge
 			break
-		}else if tapRt.CallType == subAgt.Basic[i].CallType && (tapRt.CallType == gCT_SMS_MO || tapRt.CallType == gCT_SMS_MT ) {
+		}else if tapRt.TypeCD == subAgt.Basic[i].TypeCD && (tapRt.TypeCD == gCT_SMS_MO || tapRt.TypeCD == gCT_SMS_MT ) {
 			tapRt.Charge = calcSmsItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate)
 			tapRt.SetCharge = tapRt.Charge
 			break
-		}else if tapRt.CallType == subAgt.Basic[i].CallType && tapRt.CallType == gCT_DATA {
+		}else if tapRt.TypeCD == subAgt.Basic[i].TypeCD && tapRt.TypeCD == gCT_DATA {
 			tapRt.Charge = calcDataItem(subAgt.Basic[i].Unit, subAgt.Basic[i].Rate, subAgt.Basic[i].Volume, tapRt.TotalCallEventDuration)
 			tapRt.SetCharge = tapRt.Charge
 			break
@@ -100,22 +98,23 @@ func CalcChargeAmount(stub shim.ChaincodeStubInterface, actAgt jsonStruct.Agreem
 		stImsiUsage := new(jsonStruct.ImsiUsage)
 		err = json.Unmarshal(imsiCapBytes[0], stImsiUsage)
 		if err != nil{  
-			return getErrorReturnValue(err, "json Unmarshal error") 
+			//return getErrorReturnValue(err, "json Unmarshal error")
+			return 0
 		}
 		
-		if tapRt.CallType == gCT_MOC_LOCAL{
+		if tapRt.TypeCD == gCT_MOC_LOCAL{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCLocal.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.CallType == gCT_MOC_HOME{
+		}else if tapRt.TypeCD == gCT_MOC_HOME{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCHome.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.CallType == gCT_MOC_INTL{
+		}else if tapRt.TypeCD == gCT_MOC_INTL{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCInt.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.CallType == gCT_MTC{
+		}else if tapRt.TypeCD == gCT_MTC{
 			f64ImsiCapCharge=stImsiUsage.TapCal.MOCInt.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.CallType == gCT_SMS_MO{
+		}else if tapRt.TypeCD == gCT_SMS_MO{
 			f64ImsiCapCharge=stImsiUsage.TapCal.SMSMO.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.CallType == gCT_SMS_MT{
+		}else if tapRt.TypeCD == gCT_SMS_MT{
 			f64ImsiCapCharge=stImsiUsage.TapCal.SMSMT.CalculDetail.Charge + tapRt.Charge
-		}else if tapRt.CallType == gCT_DATA{
+		}else if tapRt.TypeCD == gCT_DATA{
 			f64ImsiCapCharge=stImsiUsage.TapCal.GPRS.CalculDetail.Charge + tapRt.Charge
 		}
 	}
