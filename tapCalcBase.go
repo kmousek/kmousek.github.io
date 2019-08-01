@@ -3,7 +3,8 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"github.com/main/go/jsonStruct"
+	"../jsonStruct"
+	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"math"
 	"strconv"
@@ -82,7 +83,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	Log_add("calcChargeAmount")
 	Log_add(tapRd.CdrInfos.CALL_TYPE_ID)
 
-
+	var actAgt jsonStruct.AgreementForCal
 	var stTapCalcReturn jsonStruct.TapCalculreturnValue //return구조체,,,tap정보는 pointer로 넘어온 값을 치환하여 처리(call by ref,,,)
 	var subAgt jsonStruct.Agreement   //계약 서브 구조체 (past와 current중 하나 Agreement매핑)
 	var bIsMonetary bool  // true : 금액 base, false : 사용량 base
@@ -93,27 +94,30 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	var bImsiCapFlag bool
 
 	//var sScCommitType string
-	//var bCommitmentFlag bool
+	var bCommitmentFlag bool
 	//var f64CommitCharge float64
+	var err error
 
 	nowDate := tapRd.CdrInfos.LOCAL_TIME[:8]
 	Log_add(nowDate)
 
 	//active인 요율 계산용 agreement 조회
-	actAgt, err := Agreement_getActive(stub, nowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
+
+	actAgt, err = Agreement_getActive(stub, nowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
 	if err != nil{
 		return stTapCalcReturn, errors.New("Agreement_getActive 조회오류")
 	}
 
 	// 처리할 tap이 agreement의 past인지 current인지 확인, imsi cap/commitment적용대상인지 확인
 	subAgt, bImsiCapFlag, bCommitmentFlag = searchAgtIdx(actAgt, nowDate)
+	fmt.Println(bCommitmentFlag)
 
 
 	//return구조체 값 매핑
-	stTapCalcReturn.AgreementID = actAgt.ID
-	stTapCalcReturn.Peoriod[0] = actAgt.Period[0]
-	stTapCalcReturn.Peoriod[1] = actAgt.Period[1]
-	stTapCalcReturn.Currency = actAgt.Currency
+	stTapCalcReturn.AgreementID = subAgt.ID
+	stTapCalcReturn.Peoriod[0] = subAgt.Period[0]
+	stTapCalcReturn.Peoriod[1] = subAgt.Period[1]
+	stTapCalcReturn.Currency = subAgt.Currency
 
 
 	// 정율 계산, additional fee 처리
@@ -148,8 +152,8 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 
 	if bImsiCapFlag == true {
 		// 사용량 base인지 금액 base인지 체크
-		if subAgt.ImsiCap.THRUNIT == gUnitByte || subAgt.ImsiCap.THRUNIT == gUnitKbyte || subAgt.ImsiCap.THRUNIT == gUnitMbyte ||
-			subAgt.ImsiCap.THRUNIT == gUnitSec  || subAgt.ImsiCap.THRUNIT == gUnitMin {
+		if subAgt.ImsiCap.THRSUNIT == gUnitByte || subAgt.ImsiCap.THRSUNIT == gUnitKbyte || subAgt.ImsiCap.THRSUNIT == gUnitMbyte ||
+			subAgt.ImsiCap.THRSUNIT == gUnitSec  || subAgt.ImsiCap.THRSUNIT == gUnitMin {
 			//사용량 base check,,,,
 			bIsMonetary = false
 		}else{
@@ -158,7 +162,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 		}
 
 		if sScImsiType == gScTypeChRate && bIsMonetary == false{    //change Rate and 사용량 base
-			f64ImsiCapCharge, err = calcImsiCapDuration(stub, &subAgt, tapRd)
+			f64ImsiCapCharge, err = calcImsiCapDuration(stub, subAgt, tapRd)
 			if err != nil{
 				//에러처리
 				return stTapCalcReturn, errors.New( err.Error())
@@ -166,7 +170,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			tapRd.CdrInfos.SetCharge = f64ImsiCapCharge
 		}else if sScImsiType == gScTypeChRate && bIsMonetary == true{  //change Rate and 금액 base
 			// perImsi 금액 기준으로 check
-			f64ImsiCapCharge, err = calcImsiCapMonetary(stub, &subAgt, tapRd)
+			f64ImsiCapCharge, err = calcImsiCapMonetary(stub, subAgt, tapRd)
 			if err != nil{
 				//에러처리
 				return stTapCalcReturn, errors.New( err.Error())
@@ -179,8 +183,8 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 /*
 	if bCommitmentFlag == true {
 		// 사용량 base인지 금액 base인지 체크
-		if subAgt.Commitment.THRUNIT == gUnitByte || subAgt.Commitment.THRUNIT == gUnitKbyte || subAgt.Commitment.THRUNIT == gUnitMbyte ||
-			subAgt.Commitment.THRUNIT == gUnitSec  || subAgt.Commitment.THRUNIT == gUnitMin {
+		if subAgt.Commitment.THRSUNIT == gUnitByte || subAgt.Commitment.THRSUNIT == gUnitKbyte || subAgt.Commitment.THRSUNIT == gUnitMbyte ||
+			subAgt.Commitment.THRSUNIT == gUnitSec  || subAgt.Commitment.THRSUNIT == gUnitMin {
 			//사용량 base check,,,,
 			bIsMonetary = false
 		}else{
@@ -237,8 +241,9 @@ func searchAgtIdx(actAgt jsonStruct.AgreementForCal, nowDate string) (jsonStruct
 
 
 
-func calculBaseRate(stUsage jsonStruct.Usage, tapRd jsonStruct.TapRecord, sTotalCallDurat string) (flaot64, error) {
+func calculBaseRate(stUsage jsonStruct.Usage, tapRd *jsonStruct.TapRecord, sTotalCallDurat string) (float64, error) {
 	var f64CallSetFee float64
+	var err error
 
 
 	if stUsage.ADTNFEETYPECD == gAddFeeTypeCallSetFee { //추가 요금 적용이 있으면
@@ -365,7 +370,7 @@ type TapCal struct{
 /************************************************************************************************************/
 // perImsi 모델, 금액 base, change rate 계산
 /************************************************************************************************************/
-func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Agreement, tapRd jsonStruct.TapRecord) (float64, error) {
+func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, subAgt jsonStruct.Agreement, tapRd *jsonStruct.TapRecord) (float64, error) {
 
 	var stImsiUsage jsonStruct.ImsiUsage  //imsi별 누적량 구조체
 	var stScBaseUsage jsonStruct.Usage  //Agreement의 usage 요율 구조체
@@ -379,13 +384,13 @@ func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Ag
 
 	//sc의 base 구조체 조회
 	for i:=0;i<len(subAgt.ImsiCap.Basic);i++{
-		if tapRd.CdrInfos.CALL_TYPE_ID == subAgt.ImsiCap.Basic[i] {
+		if tapRd.CdrInfos.CALL_TYPE_ID == subAgt.ImsiCap.Basic[i].TypeCD {
 			stScBaseUsage = subAgt.ImsiCap.Basic[i]
 			break
 		}
 	}
 
-	queryKey := strings.Fields(gQuryType_ImsiUsage+tapRd.CdrInfos.LOCAL_TIME[:8]+tapRd.CdrInfos.Imsi)
+	queryKey := strings.Fields(gQuryType_ImsiUsage+tapRd.CdrInfos.LOCAL_TIME[:8]+tapRd.CdrInfos.IMSI_ID)
 	imsiCapBytes, err := Block_Query(stub, queryKey)
 
 	if err != nil{
@@ -399,29 +404,29 @@ func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Ag
 
 		// 비교할 사용량 조회
 		if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_LOCAL{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCLocal.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCLocal.Charge
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_HOME{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCHome.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCHome.Charge
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_INTL{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCInt.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCInt.Charge
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MTC{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCInt.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.MOCInt.Charge
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_SMS_MO{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.SMSMO.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.SMSMO.Charge
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_SMS_MT{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.SMSMT.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.SMSMT.Charge
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_DATA{
-			f64ImsiCapUseAmount=stImsiUsage.TapCal.GPRS.CalculDetail.Charge
+			f64ImsiCapUseAmount=stImsiUsage.TapCal.GPRS.Charge
 		}
 	}
 
 	//비교를 위헤 string을 float64로 변환
-	f64ImsiCapTHRMIN, err = strconv.ParseFloat(subAgt.ImsiCap.THRMIN, 64)
+	f64ImsiCapTHRMIN, err = strconv.ParseFloat(subAgt.ImsiCap.THRSMIN, 64)
 	if err != nil {
 		return 0, errors.New("f64ImsiCapTHRMIN : string to float64 conv error")
 	}
 
-	f64ImsiCapTHRMAX, err = strconv.ParseFloat(subAgt.ImsiCap.THRMAX, 64)
+	f64ImsiCapTHRMAX, err = strconv.ParseFloat(subAgt.ImsiCap.THRSMAX, 64)
 	if err != nil {
 		return 0, errors.New("f64ImsiCapTHRMAX : string to float64 conv error")
 	}
@@ -446,7 +451,7 @@ func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Ag
 /************************************************************************************************************/
 // perImsi 모델, 사용량 base, change rate 계산
 /************************************************************************************************************/
-func calcImsiCapDuration(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Agreement, tapRd jsonStruct.TapRecord) (float64, error) {
+func calcImsiCapDuration(stub shim.ChaincodeStubInterface, subAgt jsonStruct.Agreement, tapRd *jsonStruct.TapRecord) (float64, error) {
 
 	var stImsiUsage jsonStruct.ImsiUsage  //imsi별 누적량 구조체
 	var stBaseUsage jsonStruct.Usage  //Agreement의 usage 요율 구조체
@@ -479,20 +484,20 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Ag
 	
 	// base요율 구조체 조회
 	for i:=0;i<len(subAgt.Basic);i++{
-		if tapRd.CdrInfos.CALL_TYPE_ID == subAgt.Basic[i] {
+		if tapRd.CdrInfos.CALL_TYPE_ID == subAgt.Basic[i].TypeCD {
 			stBaseUsage = subAgt.Basic[i]
 			break
 		}
 	}
 	//sc의 base 구조체 조회
 	for i:=0;i<len(subAgt.ImsiCap.Basic);i++{
-		if tapRd.CdrInfos.CALL_TYPE_ID == subAgt.ImsiCap.Basic[i] {
+		if tapRd.CdrInfos.CALL_TYPE_ID == subAgt.ImsiCap.Basic[i].TypeCD {
 			stScBaseUsage = subAgt.ImsiCap.Basic[i]
 			break
 		}
 	}
 
-	queryKey := strings.Fields(gQuryType_ImsiUsage+tapRd.CdrInfos.LOCAL_TIME[:8]+tapRd.CdrInfos.Imsi)
+	queryKey := strings.Fields(gQuryType_ImsiUsage+tapRd.CdrInfos.LOCAL_TIME[:8]+tapRd.CdrInfos.IMSI_ID)
 	imsiCapBytes, err := Block_Query(stub, queryKey)
 
 	if err != nil{
@@ -506,29 +511,29 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, subAgt *jsonStruct.Ag
 
 		// 비교할 사용량 조회
 		if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_LOCAL{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCLocal.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCLocal.Duration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_HOME{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCHome.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCHome.Duration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_INTL{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCInt.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCInt.Duration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MTC{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCInt.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.MOCInt.Duration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_SMS_MO{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.SMSMO.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.SMSMO.Duration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_SMS_MT{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.SMSMT.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.SMSMT.Duration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_DATA{
-			f64ImsiCapUseDuration=stImsiUsage.TapCal.GPRS.CalculDetail.Duration
+			f64ImsiCapUseDuration=stImsiUsage.TapCal.GPRS.Duration
 		}
 	}
 
 	//비교를 위헤 string을 float64로 변환
-	f64ImsiCapTHRMIN, err = strconv.ParseFloat(subAgt.ImsiCap.THRMIN, 64)
+	f64ImsiCapTHRMIN, err = strconv.ParseFloat(subAgt.ImsiCap.THRSMIN, 64)
 	if err != nil {
 		return 0, errors.New("f64ImsiCapTHRMIN : string to float64 conv error")
 	}
 
-	f64ImsiCapTHRMAX, err = strconv.ParseFloat(subAgt.ImsiCap.THRMAX, 64)
+	f64ImsiCapTHRMAX, err = strconv.ParseFloat(subAgt.ImsiCap.THRSMAX, 64)
 	if err != nil {
 		return 0, errors.New("f64ImsiCapTHRMAX : string to float64 conv error")
 	}
