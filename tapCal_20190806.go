@@ -152,7 +152,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	// 처리할 tap이 agreement의 past인지 current인지 확인, imsi cap/commitment적용대상인지 확인
 	stSubContract = searchAgtIdx(actContract, nowDate)
 	fmt.Println(bCommitmentFlag)
-
+	Log_add("after searchAgtIdx")
 
 	//return구조체 값 매핑
 	stTapCalcReturn.ContractID = stSubContract.CONTID
@@ -277,9 +277,17 @@ func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonSt
 	Log_add("searchAgtIdx")
 	var returnAgt jsonStruct.Contract
 
+	Log_add("nowDate : " + nowDate)
+	Log_add("past stdt :" + actContract.ContractInfo.Past.ContDtl.CONTSTDATE)
+	Log_add("past eddt :" + actContract.ContractInfo.Past.ContDtl.CONTEXPDATE)
+	Log_add("curr stdt :" + actContract.ContractInfo.Current.ContDtl.CONTSTDATE)
+	Log_add("curr eddt :" + actContract.ContractInfo.Current.ContDtl.CONTEXPDATE)
+
 	if actContract.ContractInfo.Past.ContDtl.CONTSTDATE <= nowDate && actContract.ContractInfo.Past.ContDtl.CONTEXPDATE >= nowDate{
+		Log_add("PAST")
 		returnAgt = actContract.ContractInfo.Past
 	}else if actContract.ContractInfo.Current.ContDtl.CONTSTDATE <= nowDate && actContract.ContractInfo.Current.ContDtl.CONTEXPDATE >= nowDate {
+		Log_add("Current")
 		returnAgt = actContract.ContractInfo.Current
 	}
 
