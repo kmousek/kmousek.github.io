@@ -145,6 +145,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 
 	actContract, err = Contract_getActive(stub, nowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
 	if err != nil{
+		Log_add("Agreement_getActive 조회오류")
 		return stTapCalcReturn, errors.New("Agreement_getActive 조회오류")
 	}
 
@@ -273,6 +274,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 
 //tap이 past인지 current인지 확인
 func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonStruct.Contract) {
+	Log_add("searchAgtIdx")
 	var returnAgt jsonStruct.Contract
 
 	if actContract.ContractInfo.Past.ContDtl.CONTSTDATE <= nowDate && actContract.ContractInfo.Past.ContDtl.CONTEXPDATE >= nowDate{
@@ -287,6 +289,7 @@ func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonSt
 
 
 func calculBaseRate(stCalcBas jsonStruct.CalcBas, tapRd *jsonStruct.TapRecord, sTotalCallDurat string) (float64, error) {
+	Log_add("calculBaseRate")
 	var f64CallSetFee float64
 	var err error
 
