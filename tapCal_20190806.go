@@ -26,7 +26,7 @@ const gCT_MOC_INTL = "MOC-int"
 const gCT_MTC = "MTC"
 const gCT_SMS_MO = "SMS-mo"
 const gCT_SMS_MT = "SMS-mt"
-const gCT_DATA = "GRPC"
+const gCT_DATA = "GPRS"
 const gUnitByte = "B"
 const gUnitKbyte = "KB"
 const gUnitMbyte = "MB"
@@ -165,11 +165,12 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	//jsonStruct.Usage와 tap record struct 인자값
 	var stCalcBas jsonStruct.CalcBas
 
-	Log_add("tapRd.CdrInfos.CALL_TYPE_ID : " + tapRd.CdrInfos.CALL_TYPE_ID)
+	Log_add("tapRd.CdrInfos.CALL_TYPE_ID : [" + tapRd.CdrInfos.CALL_TYPE_ID + "]")
 
 	for i:=0;i<len(stSubContract.ContDtl.CalcBas);i++{
-		Log_add("stSubContract.ContDtl.CalcBas[i].CALLTYPECD : " + stSubContract.ContDtl.CalcBas[i].CALLTYPECD)
+		Log_add("stSubContract.ContDtl.CalcBas[i].CALLTYPECD : [" + stSubContract.ContDtl.CalcBas[i].CALLTYPECD + "]")
 		if tapRd.CdrInfos.CALL_TYPE_ID == stSubContract.ContDtl.CalcBas[i].CALLTYPECD {
+			Log_add("tapRd.CdrInfos.CALL_TYPE_ID == stSubContract.ContDtl.CalcBas[i].CALLTYPECD")
 			stCalcBas = stSubContract.ContDtl.CalcBas[i]
 			f64Charge, err = calculBaseRate(stCalcBas, tapRd, tapRd.CdrInfos.TOT_CALL_DURAT)
 			if err != nil{
@@ -282,10 +283,10 @@ func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonSt
 	var returnAgt jsonStruct.Contract
 
 	Log_add("nowDate : " + nowDate)
-	Log_add("past stdt :" + actContract.ContractInfo.Past.ContDtl.CONTSTDATE)
-	Log_add("past eddt :" + actContract.ContractInfo.Past.ContDtl.CONTEXPDATE)
-	Log_add("curr stdt :" + actContract.ContractInfo.Current.ContDtl.CONTSTDATE)
-	Log_add("curr eddt :" + actContract.ContractInfo.Current.ContDtl.CONTEXPDATE)
+	Log_add("past stdt : [" + actContract.ContractInfo.Past.ContDtl.CONTSTDATE + "]")
+	Log_add("past eddt : [" + actContract.ContractInfo.Past.ContDtl.CONTEXPDATE + "]")
+	Log_add("curr stdt : [" + actContract.ContractInfo.Current.ContDtl.CONTSTDATE + "]")
+	Log_add("curr eddt : [" + actContract.ContractInfo.Current.ContDtl.CONTEXPDATE + "]")
 
 	if actContract.ContractInfo.Past.ContDtl.CONTSTDATE <= nowDate && actContract.ContractInfo.Past.ContDtl.CONTEXPDATE >= nowDate{
 		Log_add("PAST")
@@ -305,7 +306,7 @@ func calculBaseRate(stCalcBas jsonStruct.CalcBas, tapRd *jsonStruct.TapRecord, s
 	var f64CallSetFee float64
 	var err error
 
-
+	Log_add("check ADTNFEETYPECD st")
 	if stCalcBas.ADTNFEETYPECD == gAddFeeTypeCallSetFee { //추가 요금 적용이 있으면
 		f64CallSetFee, err = strconv.ParseFloat(stCalcBas.ADTNFEEAMT, 64)
 		if err != nil {
@@ -314,16 +315,23 @@ func calculBaseRate(stCalcBas jsonStruct.CalcBas, tapRd *jsonStruct.TapRecord, s
 	}else if stCalcBas.ADTNFEETYPECD == gNotExgtValue{ // "null"
 		f64CallSetFee = 0
 	}
+	Log_add("check ADTNFEETYPECD ed")
+	Log_add("tapRd.CdrInfos.CALL_TYPE_ID : [" + tapRd.CdrInfos.CALL_TYPE_ID + "]")
+	Log_add("gCT_DATA : [" + gCT_DATA + "]")
 
 	if tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_LOCAL || tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_HOME ||
 		tapRd.CdrInfos.CALL_TYPE_ID == gCT_MOC_INTL || tapRd.CdrInfos.CALL_TYPE_ID == gCT_MTC {
+		Log_add("if VOICE")
 		return f64CallSetFee + calcVoiceItem(stCalcBas.STELUNIT, stCalcBas.STELTARIF, stCalcBas.STELVLM, sTotalCallDurat), nil
 	}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_SMS_MO || tapRd.CdrInfos.CALL_TYPE_ID == gCT_SMS_MT  {
+		Log_add("if SMS")
 		return f64CallSetFee + calcSmsItem(stCalcBas.STELUNIT, stCalcBas.STELTARIF), nil
 	}else if tapRd.CdrInfos.CALL_TYPE_ID == gCT_DATA {
+		Log_add("if gCT_DATA")
 		return f64CallSetFee + calcDataItem(stCalcBas.STELUNIT, stCalcBas.STELTARIF, stCalcBas.STELVLM, sTotalCallDurat), nil
 	}
 
+	Log_add("Not matched Call type")
 	return 0, errors.New("Not matched Call type")
 }
 
