@@ -159,13 +159,16 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	stTapCalcReturn.Peoriod[0] = stSubContract.ContDtl.CONTSTDATE
 	stTapCalcReturn.Peoriod[1] = stSubContract.ContDtl.CONTEXPDATE
 	stTapCalcReturn.Currency = stSubContract.ContDtl.CONTCURCD
-
+	Log_add("after stTapCalcReturn mapping")
 
 	// 정율 계산, additional fee 처리
 	//jsonStruct.Usage와 tap record struct 인자값
 	var stCalcBas jsonStruct.CalcBas
 
+	Log_add("tapRd.CdrInfos.CALL_TYPE_ID : " + tapRd.CdrInfos.CALL_TYPE_ID)
+
 	for i:=0;i<len(stSubContract.ContDtl.CalcBas);i++{
+		Log_add("stSubContract.ContDtl.CalcBas[i].CALLTYPECD : " + stSubContract.ContDtl.CalcBas[i].CALLTYPECD)
 		if tapRd.CdrInfos.CALL_TYPE_ID == stSubContract.ContDtl.CalcBas[i].CALLTYPECD {
 			stCalcBas = stSubContract.ContDtl.CalcBas[i]
 			f64Charge, err = calculBaseRate(stCalcBas, tapRd, tapRd.CdrInfos.TOT_CALL_DURAT)
@@ -178,6 +181,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 		}
 	}
 
+	Log_add("after for i:=0;i<len(stSubContract.ContDtl.CalcBas);i++{")
 	//특수조건 타입 저장
 	//sScImsiType = subContract.ContDataReq.ContDtl.CalcSpcl.MODELTYPECD
 	//sScCommitType = subContract.Commitment.APPLY
