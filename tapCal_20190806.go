@@ -230,21 +230,23 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			Log_add("bIsMonetary = true")
 		}
 
-
-		if sScImsiType == gScTypeChRate && bIsMonetary == false{    //change Rate and 사용량 base
+		Log_add("stSubCtrtCalcSpImsiCap.MODELTYPECD : ["+stSubCtrtCalcSpImsiCap.MODELTYPECD+"]")
+		if stSubCtrtCalcSpImsiCap.MODELTYPECD == gScTypeChRate && bIsMonetary == false{    //change Rate and 사용량 base
 			Log_add("imsicap change Rate and 사용량 base")
 			f64ImsiCapCharge, err = calcImsiCapDuration(stub, recordMemory, stCalcBas, stSubCtrtCalcSpImsiCap, tapRd)
 			if err != nil{
 				//에러처리
+				Log_add(err.Error())
 				return stTapCalcReturn, errors.New( err.Error())
 			}
 			tapRd.CdrInfos.SetCharge = f64ImsiCapCharge
-		}else if sScImsiType == gScTypeChRate && bIsMonetary == true{  //change Rate and 금액 base
+		}else if stSubCtrtCalcSpImsiCap.MODELTYPECD == gScTypeChRate && bIsMonetary == true{  //change Rate and 금액 base
 			Log_add("imsicap change Rate and 금액 base")
 			// perImsi 금액 기준으로 check
 			f64ImsiCapCharge, err = calcImsiCapMonetary(stub, recordMemory, stCalcBas, stSubCtrtCalcSpImsiCap, tapRd)
 			if err != nil{
 				//에러처리
+				Log_add(err.Error())
 				return stTapCalcReturn, errors.New( err.Error())
 			}
 			tapRd.CdrInfos.SetCharge = f64ImsiCapCharge
