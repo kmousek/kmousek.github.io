@@ -601,11 +601,13 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 		}
 	}
 	//recordMemory jsonStruct.RecordMemory
-	queryKey := strings.Fields(gQuryType_ImsiUsage+tapRd.CdrInfos.LOCAL_TIME[:8]+tapRd.CdrInfos.IMSI_ID)
+	queryKey := []string{gQuryType_ImsiUsage, tapRd.CdrInfos.LOCAL_TIME[:8], tapRd.CdrInfos.IMSI_ID}
+    //queryKey := strings.Fields(gQuryType_ImsiUsage+tapRd.CdrInfos.LOCAL_TIME[:8]+tapRd.CdrInfos.IMSI_ID)
 	imsiCapBytes, err := jsonStruct.TapRecordUsageQuery(stub, queryKey, recordMemory)
 
 	Log_add("TapRecordUsageQuery 조회")
 	Log_add("err.Error() : ["+err.Error()+"]")
+
 	if err.Error() == "wrong key data" {
 		//no row selected
 	}else if err != nil{
