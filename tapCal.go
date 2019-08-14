@@ -1,7 +1,7 @@
 package service
 
 import (
-	"../jsonStruct"
+	"github.com/main/go/jsonStruct"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -133,11 +133,30 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			}
 			tapRd.CdrInfos.CalculDetail.Charge = f64Charge
 			tapRd.CdrInfos.CalculDetail.TAXCharge = f64TaxCharge
+			tapRd.CdrInfos.CalculDetail.SetCharge = f64Charge
+			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64TaxCharge
 
 			break
 		}
 	}
 
+	Log_add("***********************Tap 정율 과금 처리 결과 시작***********************")
+	Log_add("HPMN             : ["+tapRd.Header.HPMN+"]")
+	Log_add("VPMN             : ["+tapRd.Header.VPMN+"]")
+	Log_add("CALL_TYPE_ID     : ["+tapRd.CdrInfos.CALL_TYPE_ID+"]")
+	Log_add("TOT_CALL_DURAT   : ["+tapRd.CdrInfos.TOT_CALL_DURAT+"]")
+	Log_add("LOCAL_TIME       : ["+tapRd.CdrInfos.LOCAL_TIME+"]")
+	Log_add("IMSI_ID          : ["+tapRd.CdrInfos.IMSI_ID+"]")
+	Log_add("Record           : ["+strconv.Itoa(tapRd.CdrInfos.CalculDetail.Record)+"]")
+	Log_add("Unit             : ["+tapRd.CdrInfos.CalculDetail.Unit+"]")
+	Log_add("Duration         : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Duration,'g',-1,64)+"]")
+	Log_add("RoundedDuration  : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.RoundedDuration,'g',-1,64)+"]")
+	Log_add("TAXINCLYN        : ["+tapRd.CdrInfos.CalculDetail.TAXINCLYN+"]")
+	Log_add("Charge           : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]")
+	Log_add("TAXCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]")
+	Log_add("SetCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]")
+	Log_add("TAXSETCharge     : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
+	Log_add("***********************Tap 정율 과금 처리 결과 끝*************************")
 
 	/******************************************************************************************************
 	특수조건 처리 (per IMSI, Commitment)
@@ -162,6 +181,14 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			}
 		}
 	}
+
+
+	Log_add("***********************return 값***********************")
+	Log_add("stTapCalcReturn.ContractID : ["+stTapCalcReturn.ContractID+"]")
+	Log_add("stTapCalcReturn.Peoriod[0] : ["+stTapCalcReturn.Peoriod[0]+"]")
+	Log_add("stTapCalcReturn.Peoriod[1] : ["+stTapCalcReturn.Peoriod[1]+"]")
+	Log_add("stTapCalcReturn.Currency   : ["+stTapCalcReturn.Currency+"]")
+	Log_add("***********************return 값 끝********************")
 
 	return stTapCalcReturn, nil
 }
@@ -403,7 +430,9 @@ func calcVoiceItem (unit string, rate string, volume string, f64TapActDurat floa
 
 	if unit ==gUnitMin{
 		Log_add("if gUnitMin")
-		return math.Ceil(f64TapActDurat/f64Volume * gVoiceUnit) * f64Rate, math.Ceil(f64TapActDurat/f64Volume * gVoiceUnit) * f64Volume, nil
+		Log_add("charge        : ["+strconv.FormatFloat(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate,'g',-1,64)+"]")
+		Log_add("roundingDurat : ["+strconv.FormatFloat(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Volume,'g',-1,64)+"]")
+		return math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate, math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Volume, nil
 	}else if unit ==gUnitSec{
 		Log_add("if gUnitSec")
 		return math.Ceil(f64TapActDurat/ f64Volume) * f64Rate, math.Ceil(f64TapActDurat/ f64Volume) * f64Volume, nil
