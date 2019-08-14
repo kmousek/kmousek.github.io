@@ -71,7 +71,7 @@
 			"TAX_INCL_YN": "no",
 			"STEL_TARIF" : "0.015",
 			"STEL_VLM" : "1",
-			"STEL_UNIT" : "min",
+			"STEL_UNIT" : "occ",
 			"ADTN_FEE_TYPE_CD" : "none",
 			"ADTN_FEE_AMT" : "0"
 		},{
