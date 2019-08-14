@@ -31,10 +31,10 @@
 		"CORRESP_BANK_NM": "Test",
 		"CORRESP_SWIFT_CD": "Test",
 		"CalcBas" : [{
-			"CONT_CALC_BAS_ID" : "MOC-local",
+			"CONT_CALC_BAS_ID" : "MOC-Local",
 			"CONT_DTL_ID" : "DTL0001",
 			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-			"CALL_TYPE_CD" : "MOC-local",
+			"CALL_TYPE_CD" : "MOC-Local",
 			"TAX_INCL_YN": "no",
 			"STEL_TARIF" : "0.03",
 			"STEL_VLM" : "1",
@@ -42,10 +42,10 @@
 			"ADTN_FEE_TYPE_CD" : "none",
 			"ADTN_FEE_AMT" : "0"
 		},{
-			"CONT_CALC_BAS_ID" : "MOC-home",
+			"CONT_CALC_BAS_ID" : "MOC-Home",
 			"CONT_DTL_ID" : "DTL0001",
 			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-			"CALL_TYPE_CD" : "MOC-home",
+			"CALL_TYPE_CD" : "MOC-Home",
 			"TAX_INCL_YN": "no",
 			"STEL_TARIF" : "0.074",
 			"STEL_VLM" : "1",
@@ -53,23 +53,12 @@
 			"ADTN_FEE_TYPE_CD" : "none",
 			"ADTN_FEE_AMT" : "0"
 		},{
-			"CONT_CALC_BAS_ID" : "MOC-int",
+			"CONT_CALC_BAS_ID" : "MOC-Int",
 			"CONT_DTL_ID" : "DTL0001",
 			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-			"CALL_TYPE_CD" : "MOC-int",
+			"CALL_TYPE_CD" : "MOC-Int",
 			"TAX_INCL_YN": "no",
 			"STEL_TARIF" : "0.274",
-			"STEL_VLM" : "1",
-			"STEL_UNIT" : "min",
-			"ADTN_FEE_TYPE_CD" : "none",
-			"ADTN_FEE_AMT" : "0"
-		},{
-			"CONT_CALC_BAS_ID" : "MTC",
-			"CONT_DTL_ID" : "DTL0001",
-			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-			"CALL_TYPE_CD" : "MTC",
-			"TAX_INCL_YN": "no",
-			"STEL_TARIF" : "0",
 			"STEL_VLM" : "1",
 			"STEL_UNIT" : "min",
 			"ADTN_FEE_TYPE_CD" : "none",
@@ -82,18 +71,7 @@
 			"TAX_INCL_YN": "no",
 			"STEL_TARIF" : "0.015",
 			"STEL_VLM" : "1",
-			"STEL_UNIT" : "occ",
-			"ADTN_FEE_TYPE_CD" : "none",
-			"ADTN_FEE_AMT" : "0"
-		},{
-			"CONT_CALC_BAS_ID" : "SMS-mt",
-			"CONT_DTL_ID" : "DTL0001",
-			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-			"CALL_TYPE_CD" : "SMS-mt",
-			"TAX_INCL_YN": "no",
-			"STEL_TARIF" : "0",
-			"STEL_VLM" : "1",
-			"STEL_UNIT" : "occ",
+			"STEL_UNIT" : "min",
 			"ADTN_FEE_TYPE_CD" : "none",
 			"ADTN_FEE_AMT" : "0"
 		},{
@@ -112,38 +90,15 @@
 			"CONT_CALC_SPCL_ID" : "Commitment001",
 			"CONT_DTL_ID" : "DTL0001",
 			"MODEL_TYPE_CD" : "Commitment",
-			"CALL_TYPE_CD" : ["MOC-local, MOC-home"],
-			"THRS_MIN" : "50",
-			"THRS_MAX" : "100",
+			"CALL_TYPE_CD" : ["MOC-Local, MOC-Home, MOC-Int, MTC"],
+			"THRS_MIN" : "0",
+			"THRS_MAX" : "1130000",
 			"THRS_UNIT" : "min",
 			"FIX_AMT_DT" : "1",
-			"FIX_AMT" : "99999999",
+			"FIX_AMT" : "500",
 			"FIX_AMT_CUR_CD" : "USD",
 			"SPCL_MEMO" : "SPCL_MEMO",
-			"APLY_TYPE" : "APLY_TYPE",
-			"CalcBas" : [{
-				"CONT_CALC_BAS_ID" : "MOC-local",
-				"CONT_DTL_ID" : "DTL0001",
-				"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-				"CALL_TYPE_CD" : "MOC-local",
-				"TAX_INCL_YN": "yes",
-				"STEL_TARIF" : "2",
-				"STEL_VLM" : "1",
-				"STEL_UNIT" : "min",
-				"ADTN_FEE_TYPE_CD" : "none",
-				"ADTN_FEE_AMT" : "0"
-			},{
-				"CONT_CALC_BAS_ID" : "MOC-home",
-				"CONT_DTL_ID" : "DTL0001",
-				"CONT_CALC_SPCL_ID" : "CALCSPCL001",
-				"CALL_TYPE_CD" : "MOC-home",
-				"TAX_INCL_YN": "yes",
-				"STEL_TARIF" : "2",
-				"STEL_VLM" : "1",
-				"STEL_UNIT" : "min",
-				"ADTN_FEE_TYPE_CD" : "none",
-				"ADTN_FEE_AMT" : "0"
-			}]
+			"APLY_TYPE" : "FixedCharge"
 		},{
 			"CONT_CALC_SPCL_ID" : "Imsicap001",
 			"CONT_DTL_ID" : "DTL0001",
