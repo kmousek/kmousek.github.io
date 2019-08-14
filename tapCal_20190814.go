@@ -1,72 +1,7 @@
-/*
-package service
-
-import (
-	"../jsonStruct"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-)
-
-func CalculChargeAmount(stub shim.ChaincodeStubInterface, cal *jsonStruct.TapRecord, recordMemory jsonStruct.RecordMemory) (jsonStruct.TapCalculreturnValue, error){
-
-	//cal 부분에 입력 해야 하는 Data
-	cal.CdrInfos.CalculDetail.Charge = 100
-	cal.CdrInfos.CalculDetail.SetCharge = 100
-	cal.CdrInfos.CalculDetail.Duration = 100
-	cal.CdrInfos.CalculDetail.RoundedDuration = 100
-	cal.CdrInfos.CalculDetail.TAXCharge = 100
-	cal.CdrInfos.CalculDetail.TAXSETCharge = 100
-	cal.CdrInfos.CalculDetail.Unit = "kb"
-	cal.CdrInfos.CalculDetail.TAXINCLYN = "y"
-
-	//반환값 TapCalculreturnValue에 입력해야 하는 Data
-	returnSample := jsonStruct.TapCalculreturnValue{}
-	returnSample.Peoriod = [2]string{"20150715","20200715"}
-	returnSample.Currency = "USD"
-		//계약 시작일 확인해서 아이디값 만들어 줘야 합니다.
-	returnSample.ContractID = "contract KORKF CHNCT 20150715"
-
-	return returnSample, nil
-}
-
-*/
-
-
-/*
-
 package service
 
 import (
 	"github.com/main/go/jsonStruct"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-)
-
-func CalculChargeAmount(stub shim.ChaincodeStubInterface, cal *jsonStruct.TapRecord, recordMemory jsonStruct.RecordMemory) (jsonStruct.TapCalculreturnValue, error){
-
-	//cal 부분에 입력 해야 하는 Data
-	cal.CdrInfos.CalculDetail.Charge = 100
-	cal.CdrInfos.CalculDetail.SetCharge = 100
-	cal.CdrInfos.CalculDetail.TAXCharge = 100
-	cal.CdrInfos.CalculDetail.TAXSETCharge = 100
-	cal.CdrInfos.CalculDetail.Unit = "kb"
-	cal.CdrInfos.CalculDetail.TAXINCLYN = "y"
-
-	//반환값 TapCalculreturnValue에 입력해야 하는 Data
-	returnSample := jsonStruct.TapCalculreturnValue{}
-	returnSample.Peoriod = [2]string{"20150715","20200715"}
-	returnSample.Currency = "USD"
-		//계약 시작일 확인해서 아이디값 만들어 줘야 합니다.
-	returnSample.ContractID = "contract KORKF CHNCT 20150715"
-
-	return returnSample, nil
-}
-
-*/
-
-
-package service
-
-import (
-	"../jsonStruct"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -111,7 +46,9 @@ const gSpecialRate = "S"
 
 //tap 요율 계산 처리 main
 func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapRecord, recordMemory jsonStruct.RecordMemory ) (jsonStruct.TapCalculreturnValue, error) {
-	Log_add("CalculChargeAmount")
+	Log_add("========================================================================================")
+	Log_add("======================function : CalculChargeAmount")
+	Log_add("========================================================================================")
 	Log_add(tapRd.CdrInfos.CALL_TYPE_ID)
 
 	var actContract jsonStruct.ContractForCal
@@ -196,11 +133,30 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			}
 			tapRd.CdrInfos.CalculDetail.Charge = f64Charge
 			tapRd.CdrInfos.CalculDetail.TAXCharge = f64TaxCharge
+			tapRd.CdrInfos.CalculDetail.SetCharge = f64Charge
+			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64TaxCharge
 
 			break
 		}
 	}
 
+	Log_add("***********************Tap 정율 과금 처리 결과 시작***********************")
+	Log_add("HPMN             : ["+tapRd.Header.HPMN+"]")
+	Log_add("VPMN             : ["+tapRd.Header.VPMN+"]")
+	Log_add("CALL_TYPE_ID     : ["+tapRd.CdrInfos.CALL_TYPE_ID+"]")
+	Log_add("TOT_CALL_DURAT   : ["+tapRd.CdrInfos.TOT_CALL_DURAT+"]")
+	Log_add("LOCAL_TIME       : ["+tapRd.CdrInfos.LOCAL_TIME+"]")
+	Log_add("IMSI_ID          : ["+tapRd.CdrInfos.IMSI_ID+"]")
+	Log_add("Record           : ["+strconv.Itoa(tapRd.CdrInfos.CalculDetail.Record)+"]")
+	Log_add("Unit             : ["+tapRd.CdrInfos.CalculDetail.Unit+"]")
+	Log_add("Duration         : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Duration,'g',-1,64)+"]")
+	Log_add("RoundedDuration  : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.RoundedDuration,'g',-1,64)+"]")
+	Log_add("TAXINCLYN        : ["+tapRd.CdrInfos.CalculDetail.TAXINCLYN+"]")
+	Log_add("Charge           : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]")
+	Log_add("TAXCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]")
+	Log_add("SetCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]")
+	Log_add("TAXSETCharge     : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
+	Log_add("***********************Tap 정율 과금 처리 결과 끝*************************")
 
 	/******************************************************************************************************
 	특수조건 처리 (per IMSI, Commitment)
@@ -226,6 +182,14 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 		}
 	}
 
+
+	Log_add("***********************return 값***********************")
+	Log_add("stTapCalcReturn.ContractID : ["+stTapCalcReturn.ContractID+"]")
+	Log_add("stTapCalcReturn.Peoriod[0] : ["+stTapCalcReturn.Peoriod[0]+"]")
+	Log_add("stTapCalcReturn.Peoriod[1] : ["+stTapCalcReturn.Peoriod[1]+"]")
+	Log_add("stTapCalcReturn.Currency   : ["+stTapCalcReturn.Currency+"]")
+	Log_add("***********************return 값 끝********************")
+
 	return stTapCalcReturn, nil
 }
 
@@ -233,7 +197,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 //Imsi cap 처리
 /************************************************************************************************************/
 func calculImsiCap(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.RecordMemory, stCalcBas jsonStruct.CalcBas, stSubCtrtCalcSpImsiCap jsonStruct.CalcSpcl, tapRd *jsonStruct.TapRecord, f64TaxPercent float64) error {
-	Log_add("calculImsiCap")
+	Log_add("======================function : calculImsiCap")
 
 	var bIsMonetary bool
 	var err error
@@ -279,6 +243,7 @@ func calculImsiCap(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.Rec
 //Commitment 처리
 /************************************************************************************************************/
 func calculCommitment(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.RecordMemory, stCalcBas jsonStruct.CalcBas, stSubCtrtCalcSpCommit jsonStruct.CalcSpcl, tapRd *jsonStruct.TapRecord, f64TaxPercent float64, sContractId string) error {
+	Log_add("======================function : calculCommitment")
 	var bIsMonetary bool
 	//var f64CommitCharge float64
 	var err error
@@ -319,7 +284,7 @@ func calculCommitment(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.
 //계약 조회 (tap이 past인지 current인지 확인)
 /************************************************************************************************************/
 func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonStruct.Contract) {
-	Log_add("searchAgtIdx")
+	Log_add("======================function : searchAgtIdx")
 	var returnAgt jsonStruct.Contract
 
 	Log_add("nowDate : " + nowDate)
@@ -344,7 +309,7 @@ func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonSt
 //정율 과금 처리
 /************************************************************************************************************/
 func calculBaseRate(sRateType string, stCalcBas jsonStruct.CalcBas, tapRd *jsonStruct.TapRecord, f64TapActDurat float64, f64TaxPercent float64) (float64, float64, error) {
-	Log_add("calculBaseRate")
+	Log_add("======================function : calculBaseRate")
 	var f64CallSetFee float64
 	var err error
 	var f64Charge float64
@@ -366,7 +331,6 @@ func calculBaseRate(sRateType string, stCalcBas jsonStruct.CalcBas, tapRd *jsonS
 	}
 	Log_add("check ADTNFEETYPECD ed")
 	Log_add("tapRd.CdrInfos.CALL_TYPE_ID : [" + tapRd.CdrInfos.CALL_TYPE_ID + "]")
-	Log_add("gCallTypeData : [" + gCallTypeData + "]")
 
 	if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocLocal || tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocHome ||
 		tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocInt || tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMtc {
@@ -448,7 +412,7 @@ func calculBaseRate(sRateType string, stCalcBas jsonStruct.CalcBas, tapRd *jsonS
 //음성 계산 함수
 /************************************************************************************************************/
 func calcVoiceItem (unit string, rate string, volume string, f64TapActDurat float64) (float64, float64, error) {
-	Log_add("calcVoiceItem")
+	Log_add("======================function : calcVoiceItem")
 
 	f64Rate, err := strconv.ParseFloat(rate, 64)
 	if err != nil{
@@ -466,7 +430,9 @@ func calcVoiceItem (unit string, rate string, volume string, f64TapActDurat floa
 
 	if unit ==gUnitMin{
 		Log_add("if gUnitMin")
-		return math.Ceil(f64TapActDurat/f64Volume * gVoiceUnit) * f64Rate, math.Ceil(f64TapActDurat/f64Volume * gVoiceUnit) * f64Volume, nil
+		Log_add("charge        : ["+strconv.FormatFloat(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate,'g',-1,64)+"]")
+		Log_add("roundingDurat : ["+strconv.FormatFloat(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Volume,'g',-1,64)+"]")
+		return math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate, math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Volume, nil
 	}else if unit ==gUnitSec{
 		Log_add("if gUnitSec")
 		return math.Ceil(f64TapActDurat/ f64Volume) * f64Rate, math.Ceil(f64TapActDurat/ f64Volume) * f64Volume, nil
@@ -481,7 +447,7 @@ func calcVoiceItem (unit string, rate string, volume string, f64TapActDurat floa
 //SMS 계산 함수
 /************************************************************************************************************/
 func calcSmsItem (unit string, rate string) (float64,error) {
-	Log_add("calcSmsItem")
+	Log_add("======================function : calcSmsItem")
 
 	Log_add("rate : ["+rate+"]")
 	Log_add("unit : ["+unit+"]")
@@ -500,7 +466,7 @@ func calcSmsItem (unit string, rate string) (float64,error) {
 //DATA 계산 함수
 /************************************************************************************************************/
 func calcDataItem (unit string, rate string, volume string, f64TapActDurat float64) (float64, float64, error) {
-	Log_add("calcDataItem")
+	Log_add("======================function : calcDataItem")
 	var f64TapActDuratToKB float64
 
 	f64Rate, err := strconv.ParseFloat(rate, 64)
@@ -536,7 +502,7 @@ func calcDataItem (unit string, rate string, volume string, f64TapActDurat float
 // perImsi 모델, 금액 base, change rate 계산
 /************************************************************************************************************/
 func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.RecordMemory, stCalcBas jsonStruct.CalcBas, stCalcSpcl jsonStruct.CalcSpcl, tapRd *jsonStruct.TapRecord, f64TaxPercent float64) (error) {
-
+	Log_add("======================function : calcImsiCapMonetary")
 	var stImsiUsage jsonStruct.ImsiUsage  //imsi별 누적량 구조체
 	var stCalcSpBas jsonStruct.CalcBas  //Agreement의 usage 요율 구조체
 
@@ -612,11 +578,13 @@ func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 
 		tapRd.CdrInfos.CalculDetail.SetCharge = f64NowCharge
 		tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64NowTaxCharge
+		return nil
 
 	}else{ // 정율 과금,,,
 		tapRd.CdrInfos.CalculDetail.SetCharge = tapRd.CdrInfos.CalculDetail.Charge
 		tapRd.CdrInfos.CalculDetail.TAXSETCharge = tapRd.CdrInfos.CalculDetail.TAXCharge
 		Log_add("IMSI CAP 정율과금")
+		return nil
 	}
 
 	return errors.New( "Not matched anything")
@@ -627,7 +595,7 @@ func calcImsiCapMonetary(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 // perImsi 모델, 사용량 base, change rate 계산
 /************************************************************************************************************/
 func calcImsiCapDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.RecordMemory, stCalcBas jsonStruct.CalcBas, stCalcSpcl jsonStruct.CalcSpcl, tapRd *jsonStruct.TapRecord, f64TaxPercent float64) (error) {
-	Log_add("calcImsiCapDuration")
+	Log_add("======================function : calcImsiCapDuration")
 
 	var stImsiUsage jsonStruct.ImsiUsage  //imsi별 누적량 구조체
 	//var stBaseUsage jsonStruct.Usage  //Agreement의 usage 요율 구조체
@@ -763,6 +731,7 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 			}
 			tapRd.CdrInfos.CalculDetail.SetCharge = f64MinBeforeCharge + f64MinNowCharge
 			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64MinBeforeTaxCharge + f64MinNowTaxCharge
+			return nil
 
 		}else if f64ImsiCapUseRoundedDurat+tapRd.CdrInfos.CalculDetail.RoundedDuration > f64ImsiCapTHRMAX{  // max에 걸친 호 처리
 			Log_add("in else if f64ImsiCapUseDuration+f64TotalCallDurat > f64ImsiCapTHRMAX")
@@ -786,6 +755,7 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 
 			tapRd.CdrInfos.CalculDetail.SetCharge = f64MaxNowCharge + f64MaxAfterCharge
 			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64MaxNowTaxCharge + f64MaxAfterTaxCharge
+			return nil
 
 		}else{  //특수 과금
 			f64NowCharge, f64NowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, tapRd.CdrInfos.CalculDetail.Duration, f64TaxPercent)
@@ -797,13 +767,13 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 
 			tapRd.CdrInfos.CalculDetail.SetCharge = f64NowCharge
 			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64NowTaxCharge
-			//return f64NowCharge, nil
+			return nil
 		}
 	}else{ // 정율 과금,,,
 		Log_add("정율 과금")
 		tapRd.CdrInfos.CalculDetail.SetCharge = tapRd.CdrInfos.CalculDetail.Charge
 		tapRd.CdrInfos.CalculDetail.TAXSETCharge = tapRd.CdrInfos.CalculDetail.TAXCharge
-		//return tapRd.CdrInfos.CalculDetail.Charge, nil
+		return nil
 	}
 
 	Log_add("Not matched anything")
@@ -816,7 +786,7 @@ func calcImsiCapDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStru
 // Commitment 모델, 금액 base, change rate 계산
 /************************************************************************************************************/
 func calcCommitMonetary(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.RecordMemory, stCalcBas jsonStruct.CalcBas, stCalcSpcl jsonStruct.CalcSpcl, tapRd *jsonStruct.TapRecord, f64TaxPercent float64, sContractId string) (error) {
-
+	Log_add("======================function : calcCommitMonetary")
 	var stTotalUsage jsonStruct.TotalUsage  //계약별 누적량 구조체
 	var stCalcSpBas jsonStruct.CalcBas  //Agreement의 usage 요율 구조체
 
@@ -896,11 +866,12 @@ func calcCommitMonetary(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 
 		tapRd.CdrInfos.CalculDetail.SetCharge = f64NowCharge
 		tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64NowTaxCharge
-		//return f64NowCharge, nil
+		return nil
 	}else{ // 정율 과금,,,
 		tapRd.CdrInfos.CalculDetail.SetCharge = tapRd.CdrInfos.CalculDetail.Charge
 		tapRd.CdrInfos.CalculDetail.TAXSETCharge = tapRd.CdrInfos.CalculDetail.TAXCharge
 		Log_add("Commitment 정율과금")
+		return nil
 	}
 
 	return errors.New( "Not matched anything")
@@ -911,7 +882,7 @@ func calcCommitMonetary(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 // Commitment 모델, 사용량 base, change rate 계산
 /************************************************************************************************************/
 func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.RecordMemory, stCalcBas jsonStruct.CalcBas, stCalcSpcl jsonStruct.CalcSpcl, tapRd *jsonStruct.TapRecord, f64TaxPercent float64, sContractId string) (error) {
-	Log_add("calcCommitDuration")
+	Log_add("======================function : calcCommitDuration")
 
 	var stTotalUsage jsonStruct.TotalUsage  //계약별 누적량 구조체
 	//var stBaseUsage jsonStruct.Usage  //Agreement의 usage 요율 구조체
@@ -1064,6 +1035,7 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 
 			tapRd.CdrInfos.CalculDetail.SetCharge = f64MinBeforeCharge + f64MinNowCharge
 			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64MinBeforeTaxCharge + f64MinNowTaxCharge
+			return nil
 
 		}else if f64CommitUseRoundedDurat+tapRd.CdrInfos.CalculDetail.RoundedDuration > f64CommitTHRMAX{  // max에 걸친 호 처리
 			Log_add("in else if f64ImsiCapUseDuration+f64TotalCallDurat > f64ImsiCapTHRMAX")
@@ -1091,6 +1063,7 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 
 			tapRd.CdrInfos.CalculDetail.SetCharge = f64MaxNowCharge + f64MaxAfterCharge
 			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64MaxNowTaxCharge + f64MaxAfterTaxCharge
+			return nil
 
 		}else{  //특수 과금
 		    Log_add("특수과금")
@@ -1106,6 +1079,7 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 
 			tapRd.CdrInfos.CalculDetail.SetCharge = f64NowCharge
 			tapRd.CdrInfos.CalculDetail.TAXSETCharge = f64NowTaxCharge
+			return nil
 		}
 	}else{ // 정율 과금,,,
 		Log_add("정율 과금")
@@ -1114,7 +1088,7 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 
 		tapRd.CdrInfos.CalculDetail.SetCharge = tapRd.CdrInfos.CalculDetail.Charge
 		tapRd.CdrInfos.CalculDetail.TAXSETCharge = tapRd.CdrInfos.CalculDetail.TAXCharge
-		//return tapRd.CdrInfos.CalculDetail.Charge, nil
+		return nil
 	}
 
 	Log_add("Not matched anything")
