@@ -1,7 +1,8 @@
 package service
 
 import (
-	"github.com/main/go/jsonStruct"
+	//"github.com/main/go/jsonStruct"
+	"../jsonStruct"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -74,22 +75,28 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	var stCalcBas jsonStruct.CalcBas
 	var f64TaxPercent float64
 	var f64TaxCharge float64
-	var nowDate string
+	var sTapLocDay string
+	var sNowDate string
 	var f64TapActDurat float64
 
-	nowDate = tapRd.CdrInfos.LOCAL_TIME[:8]
-	Log_add(nowDate)
 
+	sTapLocDay = tapRd.CdrInfos.LOCAL_TIME[:8]  //yyyymmdd
+	Log_add("sTapLocDay : ["+sTapLocDay+"]")
 
+	/*정산 마감일 기준 적용하여 요율 계산
+	  3일 00시 기준으로 전월자 데이터가 인입되면 해당월로 처리 */
+	sNowDate = GetContractActiveMonth(sTapLocDay)  //yyyymmdd
+	//에러처리
+	
 	//active인 요율 계산용 agreement 조회
-	actContract, err = Contract_getActive(stub, nowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
+	actContract, err = Contract_getActive(stub, sNowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
 	if err != nil{
 		Log_add("Agreement_getActive 조회오류")
 		return stTapCalcReturn, errors.New("Agreement_getActive 조회오류")
 	}
 
-	// 처리할 tap이 agreement의 past인지 current인지 확인
-	stSubContract = searchAgtIdx(actContract, nowDate)
+	// 처리할 tap이 current 혹은 past인지 체크해서 해당 구조체를 반환함.
+	stSubContract = searchAgtIdx(actContract, sNowDate)
 	fmt.Println(bCommitmentFlag)
 	Log_add("after searchAgtIdx")
 
@@ -142,7 +149,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 			break
 		}
 	}
-
+/*
 	Log_add("***********************Tap 정율 과금 처리 결과 시작***********************")
 	Log_add("HPMN             : ["+tapRd.Header.HPMN+"]")
 	Log_add("VPMN             : ["+tapRd.Header.VPMN+"]")
@@ -159,6 +166,12 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	Log_add("TAXCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]")
 	Log_add("SetCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]")
 	Log_add("TAXSETCharge     : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
+	Log_add("***********************Tap 정율 과금 처리 결과 끝*************************")
+*/
+
+	Log_add("***********************Tap 정율 과금 처리 결과 시작***********************")
+    Log_add("(1)[HPMN](2)[VPMN](3)[CALL_TYPE_ID](4)[TOT_CALL_DURAT](5)[LOCAL_TIME](6)[IMSI_ID](7)[Record](8)[Unit](9)[Duration](10)[RoundedDuration](11)[TAXINCLYN](12)[Charge](13)[TAXCharge](14)[SetCharge](15)[TAXSETCharge]")
+	Log_add("(1)"+"["+tapRd.Header.HPMN+"]"+"(2)"+"["+tapRd.Header.VPMN+"]"+"(3)"+"["+tapRd.CdrInfos.CALL_TYPE_ID+"]"+"(4)"+"["+tapRd.CdrInfos.TOT_CALL_DURAT+"]"+"(5)"+"["+tapRd.CdrInfos.LOCAL_TIME+"]"+"(6)"+"["+tapRd.CdrInfos.IMSI_ID+"]"+"(7)"+"["+strconv.Itoa(tapRd.CdrInfos.CalculDetail.Record)+"]"+"(8)"+"["+tapRd.CdrInfos.CalculDetail.Unit+"]"+"(9)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Duration,'g',-1,64)+"]"+"(10)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.RoundedDuration,'g',-1,64)+"]"+"(11)"+"["+tapRd.CdrInfos.CalculDetail.TAXINCLYN+"]"+"(12)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]"+"(13)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]"+"(14)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]"+"(15)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
 	Log_add("***********************Tap 정율 과금 처리 결과 끝*************************")
 
 	/******************************************************************************************************
@@ -177,14 +190,18 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 		}
 	}
 
-
+/*
 	Log_add("***********************Tap imsi cap 처리 결과 시작***********************")
 	Log_add("Charge           : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]")
 	Log_add("TAXCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]")
 	Log_add("SetCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]")
 	Log_add("TAXSETCharge     : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
 	Log_add("***********************Tap imsi cap 처리 결과 끝*************************")
-
+*/
+	Log_add("***********************Tap imsi cap 처리 결과 시작***********************")
+	Log_add("(1)[Charge](2)[TAXCharge](3)[SetCharge](4)[TAXSETCharge]")
+	Log_add("(1)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]"+"(2)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]"+"(3)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]"+"(4)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
+	Log_add("***********************Tap imsi cap 처리 결과 끝*************************")
 
 
 	/******************************************************************************************************
@@ -201,13 +218,18 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 		}
 	}
 
+/*
 	Log_add("***********************Tap commitment 처리 결과 시작***********************")
 	Log_add("Charge           : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]")
 	Log_add("TAXCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]")
 	Log_add("SetCharge        : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]")
 	Log_add("TAXSETCharge     : ["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
 	Log_add("***********************Tap commitment 처리 결과 끝*************************")
-
+*/
+	Log_add("***********************Tap commitment 처리 결과 시작***********************")
+	Log_add("(1)[Charge](2)[TAXCharge](3)[SetCharge](4)[TAXSETCharge]")
+	Log_add("(1)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge,'g',-1,64)+"]"+"(2)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge,'g',-1,64)+"]"+"(3)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.SetCharge,'g',-1,64)+"]"+"(4)"+"["+strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXSETCharge,'g',-1,64)+"]")
+	Log_add("***********************Tap commitment 처리 결과 끝*************************")
 
 
 	Log_add("***********************return 값***********************")
@@ -312,20 +334,20 @@ func calculCommitment(stub shim.ChaincodeStubInterface, recordMemory jsonStruct.
 /************************************************************************************************************/
 //계약 조회 (tap이 past인지 current인지 확인)
 /************************************************************************************************************/
-func searchAgtIdx(actContract jsonStruct.ContractForCal, nowDate string) (jsonStruct.Contract) {
+func searchAgtIdx(actContract jsonStruct.ContractForCal, sNowDate string) (jsonStruct.Contract) {
 	Log_add("======================function : searchAgtIdx")
 	var returnAgt jsonStruct.Contract
 
-	Log_add("nowDate : " + nowDate)
+	Log_add("sNowDate : " + sNowDate)
 	Log_add("past stdt : [" + actContract.ContractInfo.Past.ContDtl.CONTSTDATE + "]")
 	Log_add("past eddt : [" + actContract.ContractInfo.Past.ContDtl.CONTEXPDATE + "]")
 	Log_add("curr stdt : [" + actContract.ContractInfo.Current.ContDtl.CONTSTDATE + "]")
 	Log_add("curr eddt : [" + actContract.ContractInfo.Current.ContDtl.CONTEXPDATE + "]")
 
-	if actContract.ContractInfo.Past.ContDtl.CONTSTDATE <= nowDate && actContract.ContractInfo.Past.ContDtl.CONTEXPDATE >= nowDate{
+	if actContract.ContractInfo.Past.ContDtl.CONTSTDATE <= sNowDate && actContract.ContractInfo.Past.ContDtl.CONTEXPDATE >= sNowDate{
 		Log_add("PAST")
 		returnAgt = actContract.ContractInfo.Past
-	}else if actContract.ContractInfo.Current.ContDtl.CONTSTDATE <= nowDate && actContract.ContractInfo.Current.ContDtl.CONTEXPDATE >= nowDate {
+	}else if actContract.ContractInfo.Current.ContDtl.CONTSTDATE <= sNowDate && actContract.ContractInfo.Current.ContDtl.CONTEXPDATE >= sNowDate {
 		Log_add("Current")
 		returnAgt = actContract.ContractInfo.Current
 	}
