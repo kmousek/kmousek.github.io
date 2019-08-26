@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	c "github.com/main/go/controller"
-	//c "../controller"
-	"github.com/main/go/jsonStruct"
-	//"../jsonStruct"
+	//c "github.com/main/go/controller"
+	c "../controller"
+	//"github.com/main/go/jsonStruct"
+	"../jsonStruct"
 )
 
 //commitment 모델 확인해서 추가 정산금액 확인 function
@@ -357,7 +357,7 @@ func InvoiceCalcCommitment(stub shim.ChaincodeStubInterface, invoice *jsonStruct
 			//hongkong 전체 traffic에 대한 commitment적용 ( 0~ 900,000USD이면 정산금액이 900,000USD)
 			if bFixedChargeFlag == true && bIsMonetary == true{
 				if f64CommitTHRMIN > f64TotalPostTaxAmount && f64TotalPostTaxAmount <= f64CommitTHRMAX{
-					invoice.InvoiceInfo.AgreeSubCharge = strconv.FormatFloat(f64FixAmt - f64TotalPostTaxAmount,'g',-1,64)
+					invoice.InvoiceInfo.AgreeSubCharge = strconv.FormatFloat(c.RoundOff(f64FixAmt - f64TotalPostTaxAmount,6),'g',-1,64)
 				}else{
 					invoice.InvoiceInfo.AgreeSubCharge = "0"
 				}
@@ -367,7 +367,7 @@ func InvoiceCalcCommitment(stub shim.ChaincodeStubInterface, invoice *jsonStruct
 			if bSpecialRuleFlag == true && bIsMonetary == false{
 				if f64CommitTHRMIN < f64VoiceTotalDuration && f64VoiceTotalDuration <= f64CommitTHRMAX{
 					f64ModiFactor = f64CommitTHRMAX/f64VoiceTotalDuration
-					invoice.InvoiceInfo.AgreeSubCharge = strconv.FormatFloat(f64VoiceTotalDuration*f64ModiFactor-f64VoiceTotalDuration,'g',-1,64)
+					invoice.InvoiceInfo.AgreeSubCharge = strconv.FormatFloat(c.RoundOff(f64VoiceTotalDuration*f64ModiFactor-f64VoiceTotalDuration,6),'g',-1,64)
 				}else{
 					invoice.InvoiceInfo.AgreeSubCharge = "0"
 				}
