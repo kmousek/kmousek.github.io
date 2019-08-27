@@ -814,6 +814,17 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 	//var sMaxNowDurat string
 	//var sMaxAfterDurat string
 
+
+	var bMocLocal bool
+	var bMocHome bool
+	var bMocInt bool
+	var bMtc bool
+
+	bMocLocal = false
+	bMocHome = false
+	bMocInt = false
+	bMtc = false
+
 	//sc의 base 구조체 조회
 	for i:=0;i<len(stCalcSpcl.CalcBas);i++{
 		if tapRd.CdrInfos.CALL_TYPE_ID == stCalcSpcl.CalcBas[i].CALLTYPECD {
@@ -867,33 +878,43 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 	Log_add("tapRd.CdrInfos.CALL_TYPE_ID : ["+tapRd.CdrInfos.CALL_TYPE_ID+"]")
 
 	for i:=0;i<len(stCalcSpcl.CALLTYPECD);i++{
+		/* 사용량 base에 all service type은 인입될수 없을것 같음,,,,확인 필요
 		if  stCalcSpcl.CALLTYPECD[i] == gCallTypeAll {
 			f64CommitUseRoundedDurat = stTotalUsage.TapCal.MOCLocal.RoundedDuration + stTotalUsage.TapCal.MOCHome.RoundedDuration + stTotalUsage.TapCal.MOCInt.RoundedDuration + stTotalUsage.TapCal.MTC.RoundedDuration + stTotalUsage.TapCal.SMSMO.RoundedDuration + stTotalUsage.TapCal.SMSMT.RoundedDuration + stTotalUsage.TapCal.GPRS.RoundedDuration
-		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocLocal{
+			break
+		}else
+		*/
+		if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocLocal{
+			bMocLocal = true
 			f64CommitUseRoundedDurat=f64CommitUseRoundedDurat+stTotalUsage.TapCal.MOCLocal.RoundedDuration
 			if stCalcSpcl.THRSUNIT == gUnitMin {   //min이면 sec로 변환
 				f64CommitTHRMIN = f64CommitTHRMIN * gVoiceUnit
 				f64CommitTHRMAX = f64CommitTHRMAX * gVoiceUnit
 			}
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocHome{
+			bMocHome = true
 			f64CommitUseRoundedDurat=stTotalUsage.TapCal.MOCHome.RoundedDuration
 			if stCalcSpcl.THRSUNIT == gUnitMin {   //min이면 sec로 변환
 				f64CommitTHRMIN = f64CommitTHRMIN * gVoiceUnit
 				f64CommitTHRMAX = f64CommitTHRMAX * gVoiceUnit
 			}
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMocInt{
+			bMocInt = true
 			f64CommitUseRoundedDurat=stTotalUsage.TapCal.MOCInt.RoundedDuration
 			if stCalcSpcl.THRSUNIT == gUnitMin {  //min이면 sec로 변환
 				f64CommitTHRMIN = f64CommitTHRMIN * gVoiceUnit
 				f64CommitTHRMAX = f64CommitTHRMAX * gVoiceUnit
 			}
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeMtc{
+			bMtc = true
 			f64CommitUseRoundedDurat=stTotalUsage.TapCal.MOCInt.RoundedDuration
 			if stCalcSpcl.THRSUNIT == gUnitMin {
 				f64CommitTHRMIN = f64CommitTHRMIN * gVoiceUnit
 				f64CommitTHRMAX = f64CommitTHRMAX * gVoiceUnit
 			}
-		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeSmsMo{
+		}
+		/*
+		else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeSmsMo{
 			f64CommitUseRoundedDurat=stTotalUsage.TapCal.SMSMO.RoundedDuration
 		}else if tapRd.CdrInfos.CALL_TYPE_ID == gCallTypeSmsMt{
 			f64CommitUseRoundedDurat=stTotalUsage.TapCal.SMSMT.RoundedDuration
@@ -904,6 +925,7 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 				f64CommitTHRMAX = f64CommitTHRMAX * gDataUnit
 			}
 		}
+		*/
 	}
 
 	Log_add("f64CommitTHRMIN : " + strconv.FormatFloat(f64CommitTHRMIN, 'g',-1,64))
@@ -911,80 +933,92 @@ func calcCommitDuration(stub shim.ChaincodeStubInterface, recordMemory jsonStruc
 	Log_add("f64CommitUseRoundedDurat : " + strconv.FormatFloat(f64CommitUseRoundedDurat, 'g',-1,64))
 	Log_add("tapRd.CdrInfos.CalculDetail.RoundedDuration : " + strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.RoundedDuration, 'g',-1,64))
 
+
+
 	//calculBaseRate(stCalcBas jsonStruct.Usage, tapRd jsonStruct.TapRecord) (flaot64, error)
-	if f64CommitUseRoundedDurat + tapRd.CdrInfos.CalculDetail.RoundedDuration > f64CommitTHRMIN && f64CommitUseRoundedDurat <= f64CommitTHRMAX{
-		Log_add("in if f64ImsiCapUseDuration + f64TotalCallDurat > f64ImsiCapTHRMIN && f64ImsiCapUseDuration <= f64ImsiCapTHRMAX")
-		if f64CommitUseRoundedDurat < f64CommitTHRMIN {  //min에 걸치 호 처리
-			Log_add("in if f64CommitUseRoundedDurat < f64CommitTHRMIN")
-			f64MinBeforeDurat = tapRd.CdrInfos.CalculDetail.Duration-(tapRd.CdrInfos.CalculDetail.Duration+f64CommitUseRoundedDurat-f64CommitTHRMIN)
-			f64MinNowDurat = tapRd.CdrInfos.CalculDetail.Duration-f64MinBeforeDurat
+	if bMocLocal == true || bMocHome == true || bMocInt == true || bMtc == true {
+		if f64CommitUseRoundedDurat + tapRd.CdrInfos.CalculDetail.RoundedDuration > f64CommitTHRMIN && f64CommitUseRoundedDurat <= f64CommitTHRMAX{
+			Log_add("in f64CommitUseRoundedDurat + tapRd.CdrInfos.CalculDetail.RoundedDuration > f64CommitTHRMIN && f64CommitUseRoundedDurat <= f64CommitTHRMAX")
+			if f64CommitUseRoundedDurat < f64CommitTHRMIN {  //min에 걸치 호 처리
+				Log_add("in if f64CommitUseRoundedDurat < f64CommitTHRMIN")
+				f64MinBeforeDurat = tapRd.CdrInfos.CalculDetail.Duration-(tapRd.CdrInfos.CalculDetail.Duration+f64CommitUseRoundedDurat-f64CommitTHRMIN)
+				f64MinNowDurat = tapRd.CdrInfos.CalculDetail.Duration-f64MinBeforeDurat
 
-			Log_add("f64MinBeforeDurat : " + strconv.FormatFloat(f64MinBeforeDurat, 'g',-1,64))
-			Log_add("f64MinNowDurat : " + strconv.FormatFloat(f64MinNowDurat, 'g',-1,64))
+				Log_add("f64MinBeforeDurat : " + strconv.FormatFloat(f64MinBeforeDurat, 'g',-1,64))
+				Log_add("f64MinNowDurat : " + strconv.FormatFloat(f64MinNowDurat, 'g',-1,64))
 
-			f64MinBeforeCharge, f64MinBeforeTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, f64MinBeforeDurat, f64TaxPercent)
-			if err != nil{
-				//에러처리
-				return errors.New( err.Error())
+				f64MinBeforeCharge, f64MinBeforeTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, f64MinBeforeDurat, f64TaxPercent)
+				if err != nil{
+					//에러처리
+					return errors.New( err.Error())
+				}
+				f64MinNowCharge, f64MinNowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcBas, tapRd, f64MinNowDurat, f64TaxPercent)
+				if err != nil{
+					//에러처리
+					return errors.New( err.Error())
+				}
+
+				Log_add("f64MinBeforeCharge : " + strconv.FormatFloat(f64MinBeforeCharge, 'g',-1,64))
+				Log_add("f64MinBeforeTaxCharge : " + strconv.FormatFloat(f64MinBeforeTaxCharge, 'g',-1,64))
+				Log_add("f64MinNowCharge : " + strconv.FormatFloat(f64MinNowCharge, 'g',-1,64))
+				Log_add("f64MinNowTaxCharge : " + strconv.FormatFloat(f64MinNowTaxCharge, 'g',-1,64))
+
+
+				tapRd.CdrInfos.CalculDetail.SetCharge = c.RoundOff(f64MinBeforeCharge + f64MinNowCharge,6)
+				tapRd.CdrInfos.CalculDetail.TAXSETCharge = c.RoundOff(f64MinBeforeTaxCharge + f64MinNowTaxCharge,6)
+				return nil
+
+			}else if f64CommitUseRoundedDurat+tapRd.CdrInfos.CalculDetail.RoundedDuration > f64CommitTHRMAX{  // max에 걸친 호 처리
+				Log_add("in else if f64ImsiCapUseDuration+f64TotalCallDurat > f64ImsiCapTHRMAX")
+				f64MaxNowDurat = tapRd.CdrInfos.CalculDetail.Duration-(tapRd.CdrInfos.CalculDetail.Duration+f64CommitUseRoundedDurat-f64CommitTHRMAX)
+				f64MaxAfterDurat = tapRd.CdrInfos.CalculDetail.Duration-f64MaxNowDurat
+
+				Log_add("f64MaxNowDurat : " + strconv.FormatFloat(f64MaxNowDurat, 'g',-1,64))
+				Log_add("f64MaxAfterDurat : " + strconv.FormatFloat(f64MaxAfterDurat, 'g',-1,64))
+
+				f64MaxNowCharge, f64MaxNowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, f64MaxNowDurat, f64TaxPercent)
+				if err != nil{
+					//에러처리
+					return errors.New( err.Error())
+				}
+				f64MaxAfterCharge, f64MaxAfterTaxCharge, err = calculBaseRate(gSpecialRate, stCalcBas, tapRd, f64MaxAfterDurat, f64TaxPercent)
+				if err != nil{
+					//에러처리
+					return errors.New( err.Error())
+				}
+
+				Log_add("f64MaxNowCharge : " + strconv.FormatFloat(f64MaxNowCharge, 'g',-1,64))
+				Log_add("f64MaxNowTaxCharge : " + strconv.FormatFloat(f64MaxNowTaxCharge, 'g',-1,64))
+				Log_add("f64MaxAfterCharge : " + strconv.FormatFloat(f64MaxAfterCharge, 'g',-1,64))
+				Log_add("f64MaxAfterTaxCharge : " + strconv.FormatFloat(f64MaxAfterTaxCharge, 'g',-1,64))
+
+				tapRd.CdrInfos.CalculDetail.SetCharge = c.RoundOff(f64MaxNowCharge + f64MaxAfterCharge,6)
+				tapRd.CdrInfos.CalculDetail.TAXSETCharge = c.RoundOff(f64MaxNowTaxCharge + f64MaxAfterTaxCharge,6)
+				return nil
+
+			}else{  //특수 과금
+				Log_add("특수과금")
+				f64NowCharge, f64NowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, tapRd.CdrInfos.CalculDetail.Duration, f64TaxPercent)
+				if err != nil{
+					//에러처리
+					Log_add(err.Error())
+					return errors.New( err.Error())
+				}
+
+				Log_add("f64NowCharge : " + strconv.FormatFloat(f64NowCharge, 'g',-1,64))
+				Log_add("f64NowTaxCharge : " + strconv.FormatFloat(f64NowTaxCharge, 'g',-1,64))
+
+				tapRd.CdrInfos.CalculDetail.SetCharge = c.RoundOff(f64NowCharge,6)
+				tapRd.CdrInfos.CalculDetail.TAXSETCharge = c.RoundOff(f64NowTaxCharge,6)
+				return nil
 			}
-			f64MinNowCharge, f64MinNowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcBas, tapRd, f64MinNowDurat, f64TaxPercent)
-			if err != nil{
-				//에러처리
-				return errors.New( err.Error())
-			}
+		}else{ // 정율 과금,,,
+			Log_add("정율 과금")
+			Log_add("tapRd.CdrInfos.CalculDetail.Charge : " + strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.Charge, 'g',-1,64))
+			Log_add("tapRd.CdrInfos.CalculDetail.TAXCharge : " + strconv.FormatFloat(tapRd.CdrInfos.CalculDetail.TAXCharge, 'g',-1,64))
 
-			Log_add("f64MinBeforeCharge : " + strconv.FormatFloat(f64MinBeforeCharge, 'g',-1,64))
-			Log_add("f64MinBeforeTaxCharge : " + strconv.FormatFloat(f64MinBeforeTaxCharge, 'g',-1,64))
-			Log_add("f64MinNowCharge : " + strconv.FormatFloat(f64MinNowCharge, 'g',-1,64))
-			Log_add("f64MinNowTaxCharge : " + strconv.FormatFloat(f64MinNowTaxCharge, 'g',-1,64))
-
-
-			tapRd.CdrInfos.CalculDetail.SetCharge = c.RoundOff(f64MinBeforeCharge + f64MinNowCharge,6)
-			tapRd.CdrInfos.CalculDetail.TAXSETCharge = c.RoundOff(f64MinBeforeTaxCharge + f64MinNowTaxCharge,6)
-			return nil
-
-		}else if f64CommitUseRoundedDurat+tapRd.CdrInfos.CalculDetail.RoundedDuration > f64CommitTHRMAX{  // max에 걸친 호 처리
-			Log_add("in else if f64ImsiCapUseDuration+f64TotalCallDurat > f64ImsiCapTHRMAX")
-			f64MaxNowDurat = tapRd.CdrInfos.CalculDetail.Duration-(tapRd.CdrInfos.CalculDetail.Duration+f64CommitUseRoundedDurat-f64CommitTHRMAX)
-			f64MaxAfterDurat = tapRd.CdrInfos.CalculDetail.Duration-f64MaxNowDurat
-
-			Log_add("f64MaxNowDurat : " + strconv.FormatFloat(f64MaxNowDurat, 'g',-1,64))
-			Log_add("f64MaxAfterDurat : " + strconv.FormatFloat(f64MaxAfterDurat, 'g',-1,64))
-
-			f64MaxNowCharge, f64MaxNowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, f64MaxNowDurat, f64TaxPercent)
-			if err != nil{
-				//에러처리
-				return errors.New( err.Error())
-			}
-			f64MaxAfterCharge, f64MaxAfterTaxCharge, err = calculBaseRate(gSpecialRate, stCalcBas, tapRd, f64MaxAfterDurat, f64TaxPercent)
-			if err != nil{
-				//에러처리
-				return errors.New( err.Error())
-			}
-
-			Log_add("f64MaxNowCharge : " + strconv.FormatFloat(f64MaxNowCharge, 'g',-1,64))
-			Log_add("f64MaxNowTaxCharge : " + strconv.FormatFloat(f64MaxNowTaxCharge, 'g',-1,64))
-			Log_add("f64MaxAfterCharge : " + strconv.FormatFloat(f64MaxAfterCharge, 'g',-1,64))
-			Log_add("f64MaxAfterTaxCharge : " + strconv.FormatFloat(f64MaxAfterTaxCharge, 'g',-1,64))
-
-			tapRd.CdrInfos.CalculDetail.SetCharge = c.RoundOff(f64MaxNowCharge + f64MaxAfterCharge,6)
-			tapRd.CdrInfos.CalculDetail.TAXSETCharge = c.RoundOff(f64MaxNowTaxCharge + f64MaxAfterTaxCharge,6)
-			return nil
-
-		}else{  //특수 과금
-		    Log_add("특수과금")
-			f64NowCharge, f64NowTaxCharge, err = calculBaseRate(gSpecialRate, stCalcSpBas, tapRd, tapRd.CdrInfos.CalculDetail.Duration, f64TaxPercent)
-			if err != nil{
-				//에러처리
-				Log_add(err.Error())
-				return errors.New( err.Error())
-			}
-
-			Log_add("f64NowCharge : " + strconv.FormatFloat(f64NowCharge, 'g',-1,64))
-			Log_add("f64NowTaxCharge : " + strconv.FormatFloat(f64NowTaxCharge, 'g',-1,64))
-
-			tapRd.CdrInfos.CalculDetail.SetCharge = c.RoundOff(f64NowCharge,6)
-			tapRd.CdrInfos.CalculDetail.TAXSETCharge = c.RoundOff(f64NowTaxCharge,6)
+			tapRd.CdrInfos.CalculDetail.SetCharge = tapRd.CdrInfos.CalculDetail.Charge
+			tapRd.CdrInfos.CalculDetail.TAXSETCharge = tapRd.CdrInfos.CalculDetail.TAXCharge
 			return nil
 		}
 	}else{ // 정율 과금,,,
@@ -1155,7 +1189,7 @@ func calcVoiceItem (unit string, rate string, volume string, f64TapActDurat floa
 
 	if unit ==gUnitMin{
 		Log_add("if gUnitMin")
-		Log_add("charge        : ["+strconv.FormatFloat(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate,'g',-1,64)+"]")
+		Log_add("charge        : ["+strconv.FormatFloat(c.RoundOff(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate,6),'g',-1,64)+"]")
 		Log_add("roundingDurat : ["+strconv.FormatFloat(math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Volume,'g',-1,64)+"]")
 		return math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Rate, math.Ceil(f64TapActDurat/(f64Volume * gVoiceUnit)) * f64Volume * gVoiceUnit, nil
 	}else if unit ==gUnitSec{
@@ -1192,6 +1226,11 @@ func calcSmsItem (unit string, rate string) (float64,error) {
 /************************************************************************************************************/
 func calcDataItem (unit string, rate string, volume string, f64TapActDurat float64) (float64, float64, error) {
 	Log_add("======================function : calcDataItem")
+	Log_add("unit : "+unit )
+	Log_add("rate : "+rate )
+	Log_add("volume : "+volume )
+	Log_add("f64TapActDurat : "+strconv.FormatFloat(f64TapActDurat,'g',-1,64) )
+
 	var f64TapActDuratToKB float64
 
 	f64Rate, err := strconv.ParseFloat(rate, 64)

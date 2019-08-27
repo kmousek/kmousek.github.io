@@ -181,6 +181,7 @@ func InvoiceCalcCommitment(stub shim.ChaincodeStubInterface, invoice *jsonStruct
 					bMocHomeFlag = true
 				}
 				if stCalcSpcl[i].CALLTYPECD[j] == gCallTypeMocInt{
+
 					bMocIntFlag = true
 				}
 				if stCalcSpcl[i].CALLTYPECD[j] == gCallTypeMtc{
