@@ -1,0 +1,25 @@
+{
+  "header":{
+  "VPMN":"KORKF",
+  "HPMN":"CHNCM",
+  "file_type_cd":"BATCH",
+  "file_div_cd":"CD",
+  "file_seq_no":"14758",
+  "file_cret_dt_val":"20190707160007",
+  "file_utc_offset":"+0900",
+  "file_avl_dt_val": "20190800000000",
+  "recd_cnt":"10"
+   },
+   "cdrInfos":[
+{"recd_seq":"CHNCTKORKF-890ff585-3bcf-4a38-b199-9d3f99c69176","call_type_id":"MTC","imsi_id":"450086360185891","chage_id":"","calld_no":"","local_time":"20190611152518","recd_utc_offset":"800","tot_call_durat":"33","imei_id":"358334080412300","callg_no":"8613808989180","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-d385d05f-64a3-4c17-8d41-81bac62cd85a","call_type_id":"MTC","imsi_id":"450087800127118","chage_id":"","calld_no":"","local_time":"20190611153204","recd_utc_offset":"800","tot_call_durat":"76","imei_id":"357353097896360","callg_no":"8618684926016","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-74cd02db-29d3-457f-9017-570579948b65","call_type_id":"MTC","imsi_id":"450087500102235","chage_id":"","calld_no":"","local_time":"20190611152441","recd_utc_offset":"800","tot_call_durat":"577","imei_id":"358705080684370","callg_no":"827074525290","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-73eaebd9-81a6-49e9-9c24-0c4322c1b55b","call_type_id":"MTC","imsi_id":"450087460126772","chage_id":"","calld_no":"","local_time":"20190611153802","recd_utc_offset":"800","tot_call_durat":"56","imei_id":"356357085207340","callg_no":"82553852885","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-0e94998f-dc60-4696-aa95-a69e9cb22067","call_type_id":"MTC","imsi_id":"450088110052812","chage_id":"","calld_no":"","local_time":"20190611154945","recd_utc_offset":"800","tot_call_durat":"23","imei_id":"3576770628534000","callg_no":"821053232065","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-e4535d6d-2875-484c-a284-87b6178fa61f","call_type_id":"MTC","imsi_id":"450087090169384","chage_id":"","calld_no":"","local_time":"20190611154657","recd_utc_offset":"800","tot_call_durat":"118","imei_id":"351699091405880","callg_no":"821041509989","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-fb0e275c-6248-4d85-9f4b-f006cc2b32b8","call_type_id":"MTC","imsi_id":"450086950177963","chage_id":"","calld_no":"","local_time":"20190611155554","recd_utc_offset":"800","tot_call_durat":"45","imei_id":"354864091389000","callg_no":"82426068737","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-4b609923-d73d-4806-9505-92135711e521","call_type_id":"MTC","imsi_id":"450088360004833","chage_id":"","calld_no":"","local_time":"20190611160541","recd_utc_offset":"800","tot_call_durat":"119","imei_id":"357292093886080","callg_no":"821093821203","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-f5235c26-03e0-4add-ab8d-72913baa86f0","call_type_id":"MTC","imsi_id":"450088790055763","chage_id":"","calld_no":"","local_time":"20190611160301","recd_utc_offset":"800","tot_call_durat":"54","imei_id":"358334080762570","callg_no":"821054246763","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+,{"recd_seq":"CHNCTKORKF-79ea7088-cb4d-42c5-9c7a-239f03a1278c","call_type_id":"MTC","imsi_id":"450086650129433","chage_id":"","calld_no":"","local_time":"20190611160431","recd_utc_offset":"800","tot_call_durat":"113","imei_id":"358334080587230","callg_no":"821053520206","data_vlm_inpt_val":"0","data_vlm_otput_val":"0"}
+              ]
+}
