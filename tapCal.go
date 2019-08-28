@@ -1,10 +1,10 @@
 package service
 
 import (
-	"github.com/main/go/jsonStruct"
-	//"../jsonStruct"
-	c "github.com/main/go/controller"
-	//c "../controller"
+	//"github.com/main/go/jsonStruct"
+	"../jsonStruct"
+	//c "github.com/main/go/controller"
+	c "../controller"
 	"encoding/json"
 	"errors"
 	"fmt"
