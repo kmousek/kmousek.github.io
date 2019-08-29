@@ -1,10 +1,10 @@
 package service
 
 import (
-	//"github.com/main/go/jsonStruct"
-	"../jsonStruct"
-	//c "github.com/main/go/controller"
-	c "../controller"
+	"github.com/chaincode/ccroam/go/jsonStruct"
+	//"../jsonStruct"
+	c "github.com/chaincode/ccroam/go/controller"
+	//c "../controller"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -93,6 +93,7 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	//active인 요율 계산용 agreement 조회
 	actContract, err = Contract_getActive(stub, sNowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
 	if err != nil{
+		Log_add(err.Error())
 		Log_add("Agreement_getActive 조회오류")
 		return stTapCalcReturn, errors.New("Agreement_getActive 조회오류")
 	}
