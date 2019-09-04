@@ -40,10 +40,10 @@ const gUnitOcc = "occ"
 const gApplyTypeChRate = "ChangeRate"
 const gApplyTypeFixedChrg = "FixedCharge"
 const gApplyTypeSpRule = "SpecialRule"
-const gAddFeeTypeCallSetFee = "CallSetypFee"
+const gAddFeeTypeCallSetFee = "CallSetUpFee"
 const gModelTypeImsiCap = "Imsicap"
 const gModelTypeCommit = "Commitment"
-const gY = "Y"
+const gY = "yes"
 const gBaseRate = "B"
 const gSpecialRate = "S"
 
@@ -91,11 +91,15 @@ func CalculChargeAmount(stub shim.ChaincodeStubInterface, tapRd *jsonStruct.TapR
 	//에러처리
 	
 	//active인 요율 계산용 agreement 조회
+
+	Log_add("sNowDate : " + sNowDate)
+	Log_add("tapRd.Header.VPMN : " + tapRd.Header.VPMN)
+	Log_add("tapRd.Header.HPMN : " + tapRd.Header.HPMN)
 	actContract, err = Contract_getActive(stub, sNowDate, tapRd.Header.VPMN, tapRd.Header.HPMN)
 	if err != nil{
 		Log_add(err.Error())
-		Log_add("Agreement_getActive 조회오류")
-		return stTapCalcReturn, errors.New("Agreement_getActive 조회오류")
+		Log_add("Contract_getActive 조회오류")
+		return stTapCalcReturn, errors.New("Contract_getActive 조회오류")
 	}
 
 	// 처리할 tap이 current 혹은 past인지 체크해서 해당 구조체를 반환함.

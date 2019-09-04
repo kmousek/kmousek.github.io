@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	//c "github.com/main/go/controller"
+	//c "github.com/chaincode/ccroam/go/controller"
 	c "../controller"
-	//"github.com/main/go/jsonStruct"
+	//"github.com/chaincode/ccroam/go/jsonStruct"
 	"../jsonStruct"
 )
 

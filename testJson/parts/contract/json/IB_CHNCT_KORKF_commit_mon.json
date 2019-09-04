@@ -1,0 +1,151 @@
+{
+	"CONT_ID" : "Cont0001",
+	"CONT_NM" : "Contract001",
+	"CONT_TYPE_CD" : "OB",
+	"CONT_MEMO" : "Contract001",
+	"CONTR_ID" : "LEAGUE-ChoSung",
+	"HPMN" : [{
+		"PLMN_ID" : "CHNCT"
+	}],
+	"VPMN" : [{
+		"PLMN_ID" : "KORKF"
+	}],
+	"ContDtl" : {
+		"CONT_DTL_ID" : "DTL0001",
+		"CONT_ID" : "Cont0001",
+		"CONT_NM" : "Contract001",
+		"CONT_ST_DATE" : "20150715",
+		"CONT_EXP_DATE" : "20200715",
+		"CONT_EXP_NOTI_DATE" : "20201701",
+		"CONT_AUTO_UPD_YN" : "Y",
+		"CONT_MEMO" : "ContractDtail001",
+		"CONT_CUR_CD" : "CNY",
+		"CONT_STTUS_CD" : "draft",
+		"EXCEPT_APLY_CALL" : "N",
+		"TAX_INCL_YN" : "N",
+		"TAX_APLY_PECNT" : "0",
+		"TAX_APLY_TYPE_CD" : "none",
+		"CPMN_ID": "CPMN_ID",
+		"CMPN_NM": "Test",
+		"CMPN_ADR": "Test",
+		"CORRESP_BANK_NM": "Test",
+		"CORRESP_SWIFT_CD": "Test",
+		"CalcBas" : [{
+			"CONT_CALC_BAS_ID" : "MOC-local",
+			"CONT_DTL_ID" : "DTL0001",
+			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+			"CALL_TYPE_CD" : "MOC-local",
+			"TAX_INCL_YN": "no",
+			"STEL_TARIF" : "0.75",
+			"STEL_VLM" : "1",
+			"STEL_UNIT" : "min",
+			"ADTN_FEE_TYPE_CD" : "none",
+			"ADTN_FEE_AMT" : "0"
+		},{
+			"CONT_CALC_BAS_ID" : "MOC-home",
+			"CONT_DTL_ID" : "DTL0001",
+			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+			"CALL_TYPE_CD" : "MOC-home",
+			"TAX_INCL_YN": "no",
+			"STEL_TARIF" : "0.8",
+			"STEL_VLM" : "1",
+			"STEL_UNIT" : "min",
+			"ADTN_FEE_TYPE_CD" : "none",
+			"ADTN_FEE_AMT" : "0"
+		},{
+			"CONT_CALC_BAS_ID" : "MOC-int",
+			"CONT_DTL_ID" : "DTL0001",
+			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+			"CALL_TYPE_CD" : "MOC-int",
+			"TAX_INCL_YN": "no",
+			"STEL_TARIF" : "3",
+			"STEL_VLM" : "1",
+			"STEL_UNIT" : "min",
+			"ADTN_FEE_TYPE_CD" : "none",
+			"ADTN_FEE_AMT" : "0"
+		},{
+			"CONT_CALC_BAS_ID" : "MTC",
+			"CONT_DTL_ID" : "DTL0001",
+			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+			"CALL_TYPE_CD" : "MTC",
+			"TAX_INCL_YN": "no",
+			"STEL_TARIF" : "0.3",
+			"STEL_VLM" : "1",
+			"STEL_UNIT" : "min",
+			"ADTN_FEE_TYPE_CD" : "none",
+			"ADTN_FEE_AMT" : "0"
+		},{
+			"CONT_CALC_BAS_ID" : "SMS-mo",
+			"CONT_DTL_ID" : "DTL0001",
+			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+			"CALL_TYPE_CD" : "SMS-mo",
+			"TAX_INCL_YN": "no",
+			"STEL_TARIF" : "0.1",
+			"STEL_VLM" : "1",
+			"STEL_UNIT" : "occ",
+			"ADTN_FEE_TYPE_CD" : "none",
+			"ADTN_FEE_AMT" : "0"
+		},{
+			"CONT_CALC_BAS_ID" : "GPRS",
+			"CONT_DTL_ID" : "DTL0001",
+			"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+			"CALL_TYPE_CD" : "GPRS",
+			"TAX_INCL_YN": "no",
+			"STEL_TARIF" : "0.00063",
+			"STEL_VLM" : "1",
+			"STEL_UNIT" : "KB",
+			"ADTN_FEE_TYPE_CD" : "none",
+			"ADTN_FEE_AMT" : "0"
+		}],
+		"CalcSpcl" : [{
+			"CONT_CALC_SPCL_ID" : "Commitment001",
+			"CONT_DTL_ID" : "DTL0001",
+			"MODEL_TYPE_CD" : "Commitment",
+			"CALL_TYPE_CD" : ["ALL-services"],
+			"THRS_MIN" : "50",
+			"THRS_MAX" : "999999999",
+			"THRS_UNIT" : "CNY",
+			"FIX_AMT_DT" : "1",
+			"FIX_AMT" : "600",
+			"FIX_AMT_CUR_CD" : "CNY",
+			"SPCL_MEMO" : "SPCL_MEMO",
+			"APLY_TYPE" : "ChangeRate",
+			"CalcBas" : [{
+				"CONT_CALC_BAS_ID" : "GPRS",
+				"CONT_DTL_ID" : "DTL0001",
+				"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+				"CALL_TYPE_CD" : "GPRS",
+				"TAX_INCL_YN": "no",
+				"STEL_TARIF" : "0",
+				"STEL_VLM" : "1",
+				"STEL_UNIT" : "KB",
+				"ADTN_FEE_TYPE_CD" : "none",
+				"ADTN_FEE_AMT" : "0"
+			}]
+		},{
+			"CONT_CALC_SPCL_ID" : "Imsicap001",
+			"CONT_DTL_ID" : "DTL0001",
+			"MODEL_TYPE_CD" : "Imsicap",
+			"CALL_TYPE_CD" : ["GPRS"],
+			"THRS_MIN" : "1.5",
+			"THRS_MAX" : "999999999",
+			"THRS_UNIT" : "CNY",
+			"FIX_AMT_DT" : "99999999",
+			"FIX_AMT_CUR_CD" : "CNY",
+			"SPCL_MEMO" : "SPCL_MEMO",
+			"APLY_TYPE" : "ChangeRate",
+			"CalcBas" : [{
+				"CONT_CALC_BAS_ID" : "GPRS",
+				"CONT_DTL_ID" : "DTL0001",
+				"CONT_CALC_SPCL_ID" : "CALCSPCL001",
+				"CALL_TYPE_CD" : "GPRS",
+				"TAX_INCL_YN": "no",
+				"STEL_TARIF" : "0",
+				"STEL_VLM" : "1",
+				"STEL_UNIT" : "KB",
+				"ADTN_FEE_TYPE_CD" : "none",
+				"ADTN_FEE_AMT" : "0"
+			}]
+		}]
+  }
+}
